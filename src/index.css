@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+
+@font-face {
+  font-family: 'Italic';
+  src: url('/IRitalic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Kumbh';
+  src: url('/KumbhSans.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+    font-family: 'Aboreto';
+    src: url('/Aboreto-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+
+@font-face {
+    font-family: 'Bebas';
+    src: url('/BebasNeue-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+

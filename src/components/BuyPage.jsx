@@ -1,10 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { CartContext } from './CartItems';
 
 const BuyPage = ({ product, onClose }) => {
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState(product.sizes ? product.sizes[0] : "30ml");
+  const { addToCart } = useContext(CartContext);
+
+  const handleAddToCart = () => {
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      unitPrice: product.price,
+      quantity,
+      size,
+      totalPrice: product.price * quantity,
+      gender: product.gender,
+      imageUrl: product.imageUrl
+    };
+    addToCart(cartItem);
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -121,7 +138,10 @@ const BuyPage = ({ product, onClose }) => {
 
           {/* Buttons */}
           <div className="mt-6 flex space-x-4">
-            <button className="flex-1 px-4 py-3 border-1 bg-blue-950/20 text-blue-950">
+            <button
+              className="flex-1 px-4 py-3 border-1 bg-blue-950/20 text-blue-950"
+              onClick={handleAddToCart}
+            >
               <FontAwesomeIcon icon={faShoppingCart} className="mr-3" />
               Add to Cart
             </button>

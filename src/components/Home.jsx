@@ -9,20 +9,23 @@ import Antheia from "../assets/antheia.png";
 import Slick from "../assets/slick.png";
 import Testimonials from "./Testimonials"; 
 import Login from "./Login";
+import { useAuth } from "../components/AuthContext";
 
 
 const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    
-    
-    const timer = setTimeout(() => {
-      setIsModalOpen(true);
-    }, 4000);
+  const { currentUser } = useAuth();
 
-    return () => clearTimeout(timer);
-  }, []);
+  useEffect(() => {
+    if (!currentUser) { // Only show modal if no user is logged in
+      const timer = setTimeout(() => {
+        setIsModalOpen(true);
+      }, 1500);
+  
+      return () => clearTimeout(timer);
+    }
+  }, [currentUser]);
 
   const controls = useAnimation();
   const { ref, inView } = useInView({ triggerOnce: false, threshold: 0.75 });

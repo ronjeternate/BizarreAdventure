@@ -65,7 +65,7 @@ const Perfume = () => {
       {/* Best Seller Section */}
       <div
         id="best-seller"
-        className="flex items-center justify-center pt-30 pb-20 min-h-screen bg-cover bg-center bg-no-repeat"
+        className="flex items-center justify-center pt-20 pb-20 min-h-screen bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
         <div>

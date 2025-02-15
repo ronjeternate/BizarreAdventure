@@ -1,10 +1,12 @@
 import { useState } from "react";
 import Modal from "react-modal";
 import { motion } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import LoginBg from "../assets/loginbg.png";
-import { auth } from "../firebase/firebase"; // Import Firebase auth
+import { auth } from "../firebase/firebase"; // Firebase auth
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "@heroicons/react/solid"; // Import icons
+import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "@heroicons/react/solid"; // Icons
 
 Modal.setAppElement("#root"); // Ensures accessibility
 
@@ -12,22 +14,22 @@ const SignUp = ({ isOpen, onClose }) => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   // Handle manual sign-up
   const handleSignUp = async () => {
     setError(""); // Clear previous errors
     if (!fullName || !email || !password) {
-      setError("All fields are required.");
+      toast.error("All fields are required!", { position: "top-right" });
       return;
     }
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      alert("Sign-up successful!");
-      onClose();
+      toast.success("Sign-up successful!", { position: "top-right" });
+      setTimeout(() => onClose(), 2000); // Close modal after 2 seconds
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message, { position: "top-right" });
     }
   };
 
@@ -44,6 +46,9 @@ const SignUp = ({ isOpen, onClose }) => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="bg-white shadow-lg w-[1000px] h-[600px] flex relative"
       >
+        {/* Toast Container for Notifications */}
+        <ToastContainer />
+
         {/* Left Side: Image */}
         <div className="w-3/4">
           <img src={LoginBg} alt="Sign Up" className="w-full h-full object-cover" />
@@ -57,7 +62,6 @@ const SignUp = ({ isOpen, onClose }) => {
             onClick={onClose}
           >
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
-            
           </button>
 
           {/* Title */}
@@ -67,9 +71,6 @@ const SignUp = ({ isOpen, onClose }) => {
           <p className="text-sm text-gray-600 text-center mb-6">
             Create an account to start shopping with <br /> <span className="text-blue-950">B I Z A R R E</span>.
           </p>
-
-          {/* Error Message */}
-          {error && <p className="text-red-600 text-sm text-center mb-3">{error}</p>}
 
           {/* Input Fields */}
           <input
@@ -113,7 +114,7 @@ const SignUp = ({ isOpen, onClose }) => {
           {/* Sign-Up Button */}
           <button
             onClick={handleSignUp}
-            className="w-full bg-blue-950 text-white p-2 mt- rounded-lg hover:bg-blue-800 transition"
+            className="w-full bg-blue-950 text-white p-2 mt-3 rounded-lg hover:bg-blue-800 transition"
           >
             Sign Up
           </button>

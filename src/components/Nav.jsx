@@ -120,7 +120,7 @@ const Nav = () => {
 
           {/* Login */}
           <li className="w-5 ml-40">
-            <NavLink to="/login">
+            <NavLink to="/profile">
               <img src={inCart || inChat || inOrderTracking ? Blogin : inAboutUs || inTestimonials ? Blogin : inPerfume ? Wlogin : Wlogin} alt="Login" />
             </NavLink>
           </li>

@@ -3,11 +3,12 @@ import Modal from "react-modal";
 import { motion } from "framer-motion";
 import { auth, googleProvider } from "../firebase/firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { EyeIcon, EyeOffIcon } from "@heroicons/react/solid"; 
+import { EyeIcon, EyeOffIcon, XIcon } from "@heroicons/react/solid";
 import LoginBg from "../assets/loginbg.png";
 import SignUp from "./SignUp";
 import ForgotPassword from "./ForgotPassword";
-import { XIcon } from "@heroicons/react/solid";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 Modal.setAppElement("#root");
 
@@ -18,7 +19,11 @@ const Login = ({ isOpen, onClose }) => {
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // ✅ Password visibility state
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Show Toast Notification
+  const notifySuccess = (message) => toast.success(message, { position: "top-right", autoClose: 3000 });
+  const notifyError = (message) => toast.error(message, { position: "top-right", autoClose: 3000 });
 
   // Handle Email/Password Login
   const handleEmailLogin = async (e) => {
@@ -28,10 +33,10 @@ const Login = ({ isOpen, onClose }) => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      alert("Login successful!");
+      notifySuccess("Login successful!");
       onClose();
     } catch (err) {
-      setError("Invalid email or password. Try again.");
+      notifyError("Invalid email or password. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -42,10 +47,10 @@ const Login = ({ isOpen, onClose }) => {
     setIsLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
-      alert("Google Login successful!");
+      notifySuccess("Google Login successful!");
       onClose();
     } catch (err) {
-      setError("Google login failed. Try again.");
+      notifyError("Google login failed. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -53,6 +58,8 @@ const Login = ({ isOpen, onClose }) => {
 
   return (
     <>
+      <ToastContainer /> {/* Toast Container for Notifications */}
+      
       <Modal isOpen={isOpen} onRequestClose={onClose} className="fixed inset-0 flex items-center justify-center pt-14 bg-black/90">
         <motion.div
           initial={{ y: "-100vh", opacity: 0 }}
@@ -66,12 +73,8 @@ const Login = ({ isOpen, onClose }) => {
           </div>
 
           <div className="w-1/2 p-8 flex flex-col justify-center">
-            {/* Close Button */}
-            <button
-              className="absolute top-4 right-4 text-blue-950 hover:text-gray-800"
-              onClick={onClose}
-            >
-              <XIcon className="w-6 h-6" /> {/* Heroicons Close Icon */}
+            <button className="absolute top-4 right-4 text-blue-950 hover:text-gray-800" onClick={onClose}>
+              <XIcon className="w-6 h-6" />
             </button>
 
             <h2 className="text-lg font-semibold text-center mb-3">
@@ -80,8 +83,6 @@ const Login = ({ isOpen, onClose }) => {
             <p className="text-sm text-gray-600 text-center mb-6">
               Welcome to <span className="text-blue-950">B I Z A R R E</span>, use your email or Google to log in.
             </p>
-
-            {error && <p className="text-red-500 text-center mb-3">{error}</p>}
 
             <form onSubmit={handleEmailLogin}>
               <input
@@ -93,10 +94,9 @@ const Login = ({ isOpen, onClose }) => {
                 disabled={isLoading}
               />
 
-              {/* ✅ Password Input with Show/Hide Button */}
               <div className="relative w-full">
                 <input
-                  type={showPassword ? "text" : "password"} // Toggle type
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -124,7 +124,6 @@ const Login = ({ isOpen, onClose }) => {
               </button>
             </form>
 
-            {/* Forgot Password & Sign-Up Links */}
             <div className="flex justify-between mt-3 text-sm">
               <button onClick={() => setIsForgotPasswordOpen(true)} className="text-blue-950" disabled={isLoading}>
                 Forgot password?
@@ -135,7 +134,6 @@ const Login = ({ isOpen, onClose }) => {
             </div>
             <ForgotPassword isOpen={isForgotPasswordOpen} onClose={() => setIsForgotPasswordOpen(false)} />
 
-            {/* Google Login */}
             <button
               onClick={handleGoogleLogin}
               className={`w-full flex items-center justify-center border border-gray-600 p-2 mt-15 rounded-lg transition ${
@@ -154,7 +152,6 @@ const Login = ({ isOpen, onClose }) => {
         </motion.div>
       </Modal>
 
-      {/* Sign-Up Modal */}
       <SignUp isOpen={isSignUpOpen} onClose={() => setIsSignUpOpen(false)} />
     </>
   );

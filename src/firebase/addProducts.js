@@ -1,6 +1,8 @@
 import { db } from "./firebase.js";
 import { collection, addDoc } from "firebase/firestore";
 
+// timestamp: serverTimestamp()
+
 const products = [
     { 
       name: "Lacoste Black / Taper Men", 

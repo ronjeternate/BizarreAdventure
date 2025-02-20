@@ -19,12 +19,30 @@ const Nav = () => {
   const [inChat, setInChat] = useState(false);
   const [inOrderTracking, setInOrderTracking] = useState(false);
   const [inPerfume, setInPerfume] = useState(false);
+  const [inProductsSection, setInProductsSection] = useState(false);
   const location = useLocation();
+
+  // Check if the current route is the profile page
+  const isProfilePage = location.pathname === "/profile";
+  const isPerfumePage = location.pathname === "/perfume";
+  const isCheckoutPage = location.pathname === "/checkout";
 
   useEffect(() => {
     const handleScroll = () => {
+      setInPerfume(isPerfumePage);
       const aboutUsSection = document.getElementById("about-us");
       const testimonialsSection = document.getElementById("testimonials");
+
+      if (isPerfumePage) {
+        const productsSection = document.getElementById("products");
+        if (!productsSection) return;
+        const productsTop = productsSection.offsetTop;
+        const productsHeight = productsSection.offsetHeight;
+        const scrollY = window.scrollY + window.innerHeight / 5; // Check mid-screen
+
+        // Update state when in the product section
+        setInProductsSection(scrollY >= productsTop && scrollY <= productsTop + productsHeight);
+      }
 
       if (!aboutUsSection || !testimonialsSection) return;
 
@@ -40,7 +58,7 @@ const Nav = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [],[isPerfumePage]);
 
   useEffect(() => {
     setInPerfume(location.pathname === "/perfume");
@@ -52,12 +70,29 @@ const Nav = () => {
 
   return (
     <div>
-      <nav className={`fixed top-0 left-0 w-full z-50 tracking-[.25em] font-[Aboreto] bg-transparent p-3 border-b border-gray-800 transition-colors duration-300 ${inCart || inChat || inOrderTracking ? "text-blue-950 font-semibold" : ""}`}>
+      <nav
+        className={`fixed top-0 left-0 w-full z-50 tracking-[.25em] font-[Aboreto] bg-transparent p-3 border-b border-gray-800 transition-colors duration-300 ${
+          isProfilePage || inCart || inChat || inOrderTracking 
+            ? "text-blue-950 font-semibold"
+            : ""
+        }`}
+      >
         <ul className="flex items-center justify-center space-x-18">
           {/* Logo */}
           <li className="w-10 mr-50">
             <NavLink to="/">
-              <img src={inCart || inChat || inOrderTracking ? Blogo : inAboutUs || inTestimonials ? Blogo : inPerfume ? Wlogo : Wlogo} alt="Logo" />
+              <img
+                src={
+                  isProfilePage || inCart || inChat || inOrderTracking || isPerfumePage  && inProductsSection || isCheckoutPage
+                    ? Blogo
+                    : inAboutUs || inTestimonials
+                    ? Blogo
+                    : inPerfume
+                    ? Wlogo
+                    : Wlogo
+                }
+                alt="Logo"
+              />
             </NavLink>
           </li>
 
@@ -68,7 +103,13 @@ const Nav = () => {
               className={({ isActive }) =>
                 `${isActive ? "border-b-2 border-blue-950 pb-1" : ""} 
                  hover:border-b-2 hover:border-blue-950 transition-colors duration-300 pb-1 ${
-                   inCart || inChat || inOrderTracking ? "text-blue-950 font-semibold" : inPerfume ? "text-white" : inAboutUs || inTestimonials ? "text-blue-950 font-semibold" : "text-white"
+                   isProfilePage || inCart || inChat || inOrderTracking || isPerfumePage && inProductsSection || isCheckoutPage
+                     ? "text-blue-950 font-semibold"
+                     : inPerfume
+                     ? "text-white"
+                     : inAboutUs || inTestimonials
+                     ? "text-blue-950 font-semibold"
+                     : "text-white"
                  }`
               }
             >
@@ -82,7 +123,13 @@ const Nav = () => {
               className={({ isActive }) =>
                 `${isActive ? "border-b-2 border-blue-950 pb-1" : ""} 
                  hover:border-b-2 hover:border-blue-950 transition-colors duration-300 pb-1 ${
-                   inCart || inChat || inOrderTracking ? "text-blue-950 font-semibold" : inPerfume ? "text-white" : inAboutUs || inTestimonials ? "text-blue-950 font-semibold" : "text-white"
+                   isProfilePage || inCart || inChat || inOrderTracking  || isPerfumePage && inProductsSection || isCheckoutPage
+                     ? "text-blue-950 font-semibold"
+                     : inPerfume 
+                     ? "text-white"
+                     : inAboutUs || inTestimonials 
+                     ? "text-blue-950 font-semibold"
+                     : "text-white"
                  }`
               }
             >
@@ -96,7 +143,13 @@ const Nav = () => {
               className={({ isActive }) =>
                 `${isActive ? "border-b-2 border-blue-950 pb-1" : ""} 
                  hover:border-b-2 hover:border-blue-950 transition-colors duration-300 pb-1 ${
-                   inCart || inChat || inOrderTracking ? "text-blue-950 font-semibold" : inPerfume ? "text-white" : inAboutUs || inTestimonials ? "text-blue-950 font-semibold" : "text-white"
+                   isProfilePage || inCart || inChat || inOrderTracking || isPerfumePage && inProductsSection || isCheckoutPage
+                     ? "text-blue-950 font-semibold"
+                     : inPerfume
+                     ? "text-white"
+                     : inAboutUs || inTestimonials
+                     ? "text-blue-950 font-semibold"
+                     : "text-white"
                  }`
               }
             >
@@ -107,27 +160,60 @@ const Nav = () => {
           {/* Chat */}
           <li className="w-5">
             <NavLink to="/customerService">
-              <img src={inCart || inChat || inOrderTracking ? Bchat : inAboutUs || inTestimonials ? Bchat : inPerfume ? Wchat : Wchat} alt="Chat" />
+              <img
+                src={
+                  isProfilePage || inCart || inChat || inOrderTracking || isPerfumePage && inProductsSection || isCheckoutPage
+                    ? Bchat
+                    : inAboutUs || inTestimonials
+                    ? Bchat
+                    : inPerfume
+                    ? Wchat
+                    : Wchat
+                }
+                alt="Chat"
+              />
             </NavLink>
           </li>
 
           {/* Cart */}
           <li className="w-5">
             <NavLink to="/cart">
-              <img src={inCart || inChat || inOrderTracking ? Bcart : inAboutUs || inTestimonials ? Bcart : inPerfume ? Wcart : Wcart} alt="Cart" />
+              <img
+                src={
+                  isProfilePage || inCart || inChat || inOrderTracking || isPerfumePage && inProductsSection || isCheckoutPage
+                    ? Bcart
+                    : inAboutUs || inTestimonials
+                    ? Bcart
+                    : inPerfume
+                    ? Wcart
+                    : Wcart
+                }
+                alt="Cart"
+              />
             </NavLink>
           </li>
 
-          {/* Login */}
+          {/* Profile */}
           <li className="w-5 ml-40">
             <NavLink to="/profile">
-              <img src={inCart || inChat || inOrderTracking ? Blogin : inAboutUs || inTestimonials ? Blogin : inPerfume ? Wlogin : Wlogin} alt="Login" />
+              <img
+                src={
+                  isProfilePage || inCart || inChat || inOrderTracking || isPerfumePage && inProductsSection  
+                    ? Blogin
+                    : inAboutUs || inTestimonials || isCheckoutPage
+                    ? Blogin
+                    : inPerfume
+                    ? Wlogin
+                    : Wlogin
+                }
+                alt="Login"
+              />
             </NavLink>
           </li>
         </ul>
       </nav>
 
-      <div className="container mx-auto">
+      <div className="mx-auto">
         <Outlet />
       </div>
     </div>

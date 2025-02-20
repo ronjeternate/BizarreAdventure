@@ -82,21 +82,11 @@ const Perfume = () => {
             </div>
           </div>
           <div className="flex items-center justify-center">
-            <a href="/perfume">
-              <img src={poloSport} alt="Polo Sport" className="w-70" />
-            </a>
-            <a href="/perfume">
-              <img src={Enchante} alt="Enchante" className="w-70" />
-            </a>
-            <a href="/perfume">
-              <img src={bestSeller} alt="BestSeller" className="w-70" />
-            </a>
-            <a href="/perfume">
-              <img src={Antheia} alt="Antheia" className="w-70" />
-            </a>
-            <a href="/perfume">
-              <img src={Slick} alt="Slick" className="w-70" />
-            </a>
+            <img src={poloSport} alt="Polo Sport" className="w-70" />
+            <img src={Enchante} alt="Enchante" className="w-70" />
+            <img src={bestSeller} alt="BestSeller" className="w-70" />
+            <img src={Antheia} alt="Antheia" className="w-70" />
+            <img src={Slick} alt="Slick" className="w-70" />
           </div>
         </div>
       </div>

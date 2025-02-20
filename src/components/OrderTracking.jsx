@@ -8,14 +8,14 @@ export default function OrderTracking() {
     <div className="min-h-screen p-20">
       <div className="flex justify-end gap-10 items-center mb-5 mt-5 ">
       <h2 className="absolute left-30 text-blue-950 font-[Bebas] text-[100px] leading-none">ORDERS:</h2>
-        <select className="border p-2 ">
+        <select className="border p-2 cursor-pointer">
           <option value="all">All</option>
           <option value="men">Men</option>
           <option value="women">Women</option>
           <option value="30ml">30ml</option>
           <option value="65ml">65ml</option>
         </select>
-        <Link to="/history" className="text-blue-950 hover:underline">
+        <Link to="/history" className="text-blue-950">
           View order's history &gt;
         </Link>
       </div>

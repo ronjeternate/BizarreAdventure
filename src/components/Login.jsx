@@ -22,8 +22,8 @@ const Login = ({ isOpen, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   // Show Toast Notification
-  const notifySuccess = (message) => toast.success(message, { position: "top-right", autoClose: 3000 });
-  const notifyError = (message) => toast.error(message, { position: "top-right", autoClose: 3000 });
+  const notifySuccess = (message) => toast.success(message, { position: "top-right", autoClose: 3000, className: "mt-15" });
+  const notifyError = (message) => toast.error(message, { position: "top-right", autoClose: 3000, className: "mt-15" });
 
   // Handle Email/Password Login
   const handleEmailLogin = async (e) => {

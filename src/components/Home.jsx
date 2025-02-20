@@ -10,6 +10,7 @@ import Slick from "../assets/slick.png";
 import Testimonials from "./Testimonials"; 
 import Login from "./Login";
 import { useAuth } from "../components/AuthContext";
+import { NavLink} from "react-router-dom";
 
 
 const Home = () => {
@@ -78,12 +79,14 @@ const Home = () => {
             A little extra luxury goes along the way!
           </p>
 
-          <a
+          <NavLink to="/perfume" className="tracking-[.2em] text-white text-[20px] font-[Aboreto] p-5 pl-15 pr-15 bg-blue-950">Shop now!</NavLink>
+
+          {/* <a
             href="/perfume"
             className="tracking-[.2em] text-white text-[20px] font-[Aboreto] p-5 pl-15 pr-15 bg-blue-950"
           >
             Shop now!
-          </a>
+          </a> */}
         </div>
 
         <motion.div

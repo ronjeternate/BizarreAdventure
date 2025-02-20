@@ -8,9 +8,7 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <div>
           <RouterProvider router={router} />
-        </div>
       </CartProvider>
     </AuthProvider>
     

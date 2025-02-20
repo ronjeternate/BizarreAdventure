@@ -46,10 +46,19 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeFromCart = async (id) => {
-    if (!currentUser) return;
-    const itemRef = doc(db, "users", currentUser.uid, "cart", id);
-    await deleteDoc(itemRef);
+  const removeFromCart = async (cartItemId) => {
+    if (!currentUser) {
+      alert("Please log in to remove items from the cart.");
+      return;
+    }
+  
+    try { 
+      const itemRef = doc(db, "users", currentUser.uid, "cart", cartItemId);
+      await deleteDoc(itemRef);
+      setCartItems((prev) => prev.filter((item) => item.id !== cartItemId)); // Update UI
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
   };
 
   return (

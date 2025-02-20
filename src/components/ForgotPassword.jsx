@@ -69,7 +69,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
         <div className="w-1/2 p-8 flex flex-col justify-center">
          
           <button
-            className="absolute top-4 right-4 flex items-center text-blue-950 hover:text-gray-800 text-lg"
+            className="absolute top-7 flex items-center text-blue-950 hover:text-gray-800 text-lg"
             onClick={onClose}
           >
             <ArrowLeftIcon className="w-5 h-5 mr-2" />

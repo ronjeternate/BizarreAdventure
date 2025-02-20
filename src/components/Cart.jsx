@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useCart } from "../components/CartItems";
 
 function Cart() {
-  const { cartItems, removeFromCart, updateQuantity } = useCart();
+  const { cartItems, removeFromCart, updateQuantity } = useCart(); // ✅ Get removeFromCart from context
   const [selectedItems, setSelectedItems] = useState([]);
 
   // Toggle individual item selection
@@ -13,6 +13,7 @@ function Cart() {
         : [...prev, productId]
     );
   };
+  
 
   // Toggle select all
   const handleSelectAll = () => {
@@ -35,38 +36,47 @@ function Cart() {
           WELCOME TO YOUR CART!
         </h1>
       </header>
-      {cartItems.length === 0 ? (
-        <p className="text-gray-500 text-xl">Your cart is empty.</p>
-      ) : (
-        <table className="min-w-full bg-white shadow-md mt-6">
-          <thead>
-            <tr className="text-gray-400">
-              <th className="px-4 py-2">
-                <input
-                  type="checkbox"
-                  checked={selectedItems.length === cartItems.length}
-                  onChange={handleSelectAll}
-                />
-              </th>
-              <th className="px-4 py-2">Item</th>
-              <th className="px-4 py-2">Unit Price</th>
-              <th className="px-4 py-2">Quantity</th>
-              <th className="px-4 py-2">Total Price</th>
-              <th className="px-4 py-2">Action</th>
+      <table className="min-w-full bg-white shadow-md mt-6">
+        <thead>
+          {/* Table Header */}
+          <tr className="text-black/50">
+            <th className="px-4 py-2">
+              <input
+                type="checkbox"
+                className="cursor-pointer"
+                checked={selectedItems.length === cartItems.length}
+                onChange={handleSelectAll}
+              />
+            </th>
+            <th className="px-4 py-2">Item</th>
+            <th className="px-4 py-2">Unit Price</th>
+            <th className="px-4 py-2">Quantity</th>
+            <th className="px-4 py-2">Total Price</th>
+            <th className="px-4 py-2">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* Display cart items or message when cart is empty */}
+          {cartItems.length === 0 ? (
+            <tr>
+              <td colSpan="6" className="px-4 py-4 text-center text-gray-500">
+                Your cart is empty.
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {cartItems.map((item) => (
-              <tr key={item.productId} className="border-t border-black/10">
+          ) : (
+            cartItems.map((item) => (
+              <tr key={`${item.productId}-${item.id}`} className="border-t border-black/10">
                 {/* Checkbox */}
                 <td className="px-4 py-2 text-center">
                   <input
                     type="checkbox"
+                    className="cursor-pointer"
                     checked={selectedItems.includes(item.productId)}
                     onChange={() => handleCheckboxChange(item.productId)}
                   />
                 </td>
-                
+
+                {/* Item Data */}
                 <td className="px-4 py-4 flex items-center">
                   <img
                     src={item.imageUrl || "https://via.placeholder.com/50"}
@@ -83,7 +93,7 @@ function Cart() {
                 <td className="px-4 py-2 text-center">₱ {item.unitPrice}</td>
 
                 {/* Quantity Section */}
-                <td className="px-4 py-2 text-center">  
+                <td className="px-4 py-2 text-center">
                   <span className="mx-2">{item.quantity}</span>
                 </td>
 
@@ -92,27 +102,31 @@ function Cart() {
 
                 {/* Remove Item */}
                 <td
-                  className="px-4 py-2 text-center text-red-500 cursor-pointer"
-                  onClick={() => removeFromCart(item.productId)}
+                  className="px-4 py-2 text-center text-red-500 cursor-pointer hover:text-red-700 transition-colors duration-200"
+                  onClick={() => {
+                    console.log("Removing item ID:", item.id); // Debugging
+                    removeFromCart(item.id);
+                  }}
                 >
                   Remove
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            ))
+          )}
+        </tbody>
+      </table>
 
       {/* Checkout Section */}
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-end  items-center mt-4">
         {/* Grand Total */}
-        <div className="text-lg font-normal">
+        <div className="text-lg font-normal m-10">
           Total: <span className="text-blue-950 font-semibold ">₱ {grandTotal.toFixed(2)}</span>
         </div>
 
         {/* Checkout Button */}
         <button
-          className="bg-blue-950 text-white text-[15px] px-15 py-3 disabled:opacity-50"
+          className={`bg-blue-950 text-white text-[15px] px-15 py-3
+            ${selectedItems.length === 0 ? 'disabled:opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           disabled={selectedItems.length === 0}
         >
           Check out

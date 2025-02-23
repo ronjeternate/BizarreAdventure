@@ -1,33 +1,10 @@
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { db, auth } from "../firebase/firebase"; // Make sure to import your Firebase setup
-import { collection, addDoc } from "firebase/firestore";
+import { collection, getDocs, updateDoc, addDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { ToastContainer, toast } from "react-toastify";
 
-
-const handleAddAddress = async () => {
-    try {
-      const addressCollection = collection(db, `users/${user.uid}/addresses`);
-      const newAddress = {
-        fullName,
-        street,
-        region,
-        postalCode,
-        phoneNumber,
-        defaultAddress: false,
-      };
-      const docRef = await addDoc(addressCollection, newAddress);
-  
-      // Pass the new address back to the parent component immediately
-      onAddressAdded({ id: docRef.id, ...newAddress });
-  
-      toast.success("Address added successfully!");
-      onClose(); // Close the modal
-    } catch (error) {
-      console.error("Error adding address:", error.message);
-      toast.error("Failed to add address.");
-    }
-  };
 
 const AddressModal = ({ onClose, onAddressAdded }) => {
   const [formData, setFormData] = useState({
@@ -39,6 +16,8 @@ const AddressModal = ({ onClose, onAddressAdded }) => {
     additionalInfo: "",
     defaultAddress: false,
   });
+
+  const [disabled, setDisabled] = useState(false);
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -66,20 +45,53 @@ const AddressModal = ({ onClose, onAddressAdded }) => {
     }
   
     try {
-      // Add the address to Firestore under the authenticated user
+      setDisabled(true);
       await addDoc(collection(db, `users/${user.uid}/addresses`), formData);
       console.log("Address Added:", formData);
-      onClose();
-      onAddressAdded();
+      toast.success("Address added successfully!",  {
+        autoClose: 2000, 
+        className:"mt-15",
+        onClose: () => {
+          onAddressAdded(); 
+          onClose();
+        },
+      });
     } catch (error) {
-      console.error("Error adding address:", error);
+      console.error("Error adding address:", error.message);
+      toast.error("Failed to add address.", {
+        className:"mt-15",
+      });
+      setDisabled(false);
     }
   };
+  
+  // After adding the new address successfully
+  const handleAddAddress = async (newAddress) => {
+    const addressCollection = collection(db, `users/${user.uid}/addresses`);
+    const snapshot = await getDocs(addressCollection);
+  
+    // Check if this is the first address
+    const isFirstAddress = snapshot.empty;
+  
+    // If it's the first address, set it as default automatically
+    const addressToAdd = {
+      ...newAddress,
+      defaultAddress: isFirstAddress ? true : false,
+    };
+  
+    // Add the new address
+    await addDoc(addressCollection, addressToAdd);
+  
+    // Refresh the address list
+    fetchUserAddresses();
+  };
+
   
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white p-6 shadow-lg w-full max-w-lg">
+        <ToastContainer/>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">My New Address</h2>
           <button onClick={onClose}>
@@ -144,29 +156,19 @@ const AddressModal = ({ onClose, onAddressAdded }) => {
             className="w-full p-2 border border-black/30"
           />
 
-          {/* Set as Default Checkbox */}
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="defaultAddress"
-              checked={formData.defaultAddress}
-              onChange={handleChange}
-              className="border-gray-400"
-            />
-            Set as default
-          </label>
-
           {/* Buttons */}
           <div className="flex justify-end gap-4 mt-4">
             <button
-              onClick={onClose}
-              className="px-12 py-2 bg-gray-100 text-black text-sm cursor-pointer"
+              onClick={disabled ? null : onClose}
+              className={`px-12 py-2 bg-gray-100 text-black text-sm cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+              disabled={disabled}
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
-              className="px-7 py-2 bg-blue-950 text-white text-sm cursor-pointer"
+              className={`px-7 py-2 bg-blue-950 text-white text-sm cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+              disabled={disabled}
             >
               Add Address
             </button>

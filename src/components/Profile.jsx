@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaUser, FaShoppingCart } from "react-icons/fa";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -55,7 +55,7 @@ const Profile = () => {
     try {
       const addressCollection = collection(db, `users/${user.uid}/addresses`);
       const snapshot = await getDocs(addressCollection);
-
+  
       const addressList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -66,6 +66,23 @@ const Profile = () => {
     }
   };
 
+  const setDefaultAddress = async (selectedAddressId) => {
+    const addressCollection = collection(db, `users/${user.uid}/addresses`);
+    const snapshot = await getDocs(addressCollection);
+  
+    const batch = writeBatch(db);
+  
+    // Loop through all addresses and update their default status
+    snapshot.docs.forEach((doc) => {
+      const isDefault = doc.id === selectedAddressId;
+      batch.update(doc.ref, { defaultAddress: isDefault });
+    });
+  
+    await batch.commit();
+    fetchUserAddresses();
+  };
+  
+
   // Save Updated User Info
   const handleSave = async () => {
     try {
@@ -74,6 +91,7 @@ const Profile = () => {
         await updateDoc(userDoc, {
           fullName: userData.fullName,
           gender: userData.gender,
+          photoURL: userData.photoURL,
         });
 
         toast.success("Profile updated successfully!", {
@@ -224,7 +242,8 @@ const Profile = () => {
 
               {isModalOpen && (
                 <AddressModal onClose={() => setIsModalOpen(false)} 
-                onAddressAdded={(newAddress) => setAddresses((prev) => [...prev, newAddress])}/>
+                onAddressAdded={fetchUserAddresses}
+                setDefaultAddress={setDefaultAddress}/>
               )}
             </div>
 
@@ -242,7 +261,7 @@ const Profile = () => {
                   address && ( // Ensure address is not undefined
                     <div
                       key={address.id}
-                      className="border-b border-black/20 p-4 rounded-lg space-y-2"
+                      className="border-b border-black/20 p-4 space-y-2"
                     >
                       <div className="flex gap-5">
                         <h3 className="font-semibold">{address.fullName || "Unnamed"}</h3>
@@ -255,11 +274,18 @@ const Profile = () => {
                         {address.street || "No street provided"}, <br />
                         {address.region || "No region"}, {address.postalCode || "No postal code"}
                       </p>
-                      {address.defaultAddress && (
-                        <span className="text-blue-950 border border-blue-950 px-2 py-1 text-xs">
-                          Default
-                        </span>
-                      )}
+                      <button
+                        onClick={() => setDefaultAddress(address.id)}
+                        className={`px-2 py-1 text-xs border ${
+                          address.defaultAddress
+                            ? "text-white bg-blue-950 border-blue-950"
+                            : "text-blue-950 border-blue-950 cursor-pointer"
+                        }`}
+                      >
+                        {address.defaultAddress ? "Default" : "Set as Default"}
+                      </button>
+
+
                     </div>
                   )
                 ))
@@ -279,7 +305,7 @@ const Profile = () => {
       {/* Sidebar */}
       <div className="w-full md:w-1/4 bg-white">
         <div className="flex items-center space-x-3 mb-6 pb-7 mr-10 border-b border-black/20">
-          <FaUser className="text-gray-600 text-3xl" />
+          {userData.photoURL}
           <div>
             <h2 className="text-lg font-semibold">
               {userData.fullName || "User"}

@@ -9,6 +9,8 @@ import SignUp from "./SignUp";
 import ForgotPassword from "./ForgotPassword";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 
 Modal.setAppElement("#root");
 
@@ -46,10 +48,28 @@ const Login = ({ isOpen, onClose }) => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+  
+      // Check if user already exists
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+  
+      if (!userSnap.exists()) {
+        // Add user credentials to Firestore
+        await setDoc(userRef, {
+          uid: user.uid,
+          fullName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+          createdAt: new Date(),
+        });
+      }
+  
       notifySuccess("Google Login successful!");
       onClose();
     } catch (err) {
+      console.error("Google Login Error:", err);
       notifyError("Google login failed. Try again.");
     } finally {
       setIsLoading(false);

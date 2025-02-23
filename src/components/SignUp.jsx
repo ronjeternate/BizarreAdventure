@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoginBg from "../assets/loginbg.png";
-import { auth } from "../firebase/firebase"; // Firebase auth
+import { auth, db } from "../firebase/firebase"; // Firebase auth and Firestore
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore"; // Firestore
 import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "@heroicons/react/solid"; // Icons
 
 Modal.setAppElement("#root"); // Ensures accessibility
@@ -24,8 +25,20 @@ const SignUp = ({ isOpen, onClose }) => {
       toast.error("All fields are required!", { position: "top-right", className: "mt-15" });
       return;
     }
+
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // Create user with email & password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Save additional user details to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        fullName: fullName,
+        email: email,
+        createdAt: new Date(),
+        phoneNumber: "", // Placeholder for future updates
+      });
+
       toast.success("Sign-up successful!", { position: "top-right", className: "mt-15" });
       setTimeout(() => onClose(), 2000); // Close modal after 2 seconds
     } catch (err) {
@@ -104,9 +117,9 @@ const SignUp = ({ isOpen, onClose }) => {
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOffIcon className=" w-5 h-5 " />
+                <EyeOffIcon className="w-5 h-5" />
               ) : (
-                <EyeIcon className="w-5 h-5 " />
+                <EyeIcon className="w-5 h-5" />
               )}
             </button>
           </div>

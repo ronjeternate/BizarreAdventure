@@ -78,7 +78,7 @@ const Login = ({ isOpen, onClose }) => {
 
   return (
     <>
-      <ToastContainer /> {/* Toast Container for Notifications */}
+      <ToastContainer autoClose={1000} /> {/* Toast Container for Notifications */}
       
       <Modal isOpen={isOpen} onRequestClose={onClose} className="fixed inset-0 flex items-center justify-center pt-14 bg-black/90">
         <motion.div
@@ -110,7 +110,7 @@ const Login = ({ isOpen, onClose }) => {
                 placeholder="Enter email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border rounded mb-3 focus:ring-2 focus:ring-blue-600"
+                className="w-full p-3 border border-black/50 mb-3 focus:ring-2 focus:ring-blue-600"
                 disabled={isLoading}
               />
 
@@ -120,12 +120,12 @@ const Login = ({ isOpen, onClose }) => {
                   placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 border rounded focus:ring-2 focus:ring-blue-600"
+                  className="w-full p-3 border border-black/50 focus:ring-2 focus:ring-blue-600"
                   disabled={isLoading}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-4 flex items-center text-blue-950"
+                  className="absolute inset-y-0 right-4 flex items-center text-blue-950 cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
                 >
@@ -135,7 +135,7 @@ const Login = ({ isOpen, onClose }) => {
 
               <button
                 type="submit"
-                className={`w-full text-white p-2 mt-3 rounded-lg transition ${
+                className={`w-full text-white p-2 mt-3  transition cursor-pointer ${
                   isLoading ? "bg-gray-500 cursor-not-allowed" : "bg-blue-950 hover:bg-blue-800"
                 }`}
                 disabled={isLoading}
@@ -145,10 +145,10 @@ const Login = ({ isOpen, onClose }) => {
             </form>
 
             <div className="flex justify-between mt-3 text-sm">
-              <button onClick={() => setIsForgotPasswordOpen(true)} className="text-blue-950" disabled={isLoading}>
+              <button onClick={() => setIsForgotPasswordOpen(true)} className="text-blue-950 cursor-pointer" disabled={isLoading}>
                 Forgot password?
               </button>
-              <button onClick={() => setIsSignUpOpen(true)} className="text-blue-950" disabled={isLoading}>
+              <button onClick={() => setIsSignUpOpen(true)} className="text-blue-950 cursor-pointer" disabled={isLoading}>
                 Sign up
               </button>
             </div>
@@ -156,7 +156,7 @@ const Login = ({ isOpen, onClose }) => {
 
             <button
               onClick={handleGoogleLogin}
-              className={`w-full flex items-center justify-center border border-gray-600 p-2 mt-15 rounded-lg transition ${
+              className={`w-full flex items-center justify-center border cursor-pointer border-black/30 p-2 mt-15 transition ${
                 isLoading ? "bg-gray-200 cursor-not-allowed" : "hover:bg-gray-200"
               }`}
               disabled={isLoading}

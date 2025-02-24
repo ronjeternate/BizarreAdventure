@@ -60,7 +60,7 @@ const SignUp = ({ isOpen, onClose }) => {
         className="bg-white shadow-lg w-[1000px] h-[600px] flex relative"
       >
         {/* Toast Container for Notifications */}
-        <ToastContainer />
+        <ToastContainer autoClose={1000} />
 
         {/* Left Side: Image */}
         <div className="w-3/4">

@@ -3,6 +3,9 @@ import { useCart } from "../components/CartItems";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/firebase";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const BuyPage = ({ product, onClose }) => {
   const [quantity, setQuantity] = useState(1);
@@ -14,12 +17,22 @@ const BuyPage = ({ product, onClose }) => {
   const MAX_QUANTITY = 10;
   const availableSizes = ["30ml", "65ml"];
 
-  // Mock user info (Replace with actual user authentication data)
-  const user = {
-    name: "Tracy Reyes",
-    phone: "9123345568",
-    address: "5124 Degafdw Ohio, USA",
-  };
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+  const auth = getAuth();
+
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    if (currentUser) {
+      setUser(currentUser);
+    } else {
+      setUser(null);
+    }
+  });
+
+  return () => unsubscribe(); // Cleanup listener on unmount
+}, []);
+
 
   const priceMapping = {
     "30ml": { Men: 219, Women: 225 },
@@ -49,30 +62,83 @@ const BuyPage = ({ product, onClose }) => {
     };
 
   addToCart(cartItem);
-  toast.success("Item added to cart!", {position:"top-right", className:"mt-15"});
+  toast.success("Item added to cart!", {position:"top-right", className:"mt-15",});
   };
 
-  const handleBuyNow = () => {
-    const orderDetails = {
-      user,
-      product: {
-        id: product.id,
-        name: product.name,
-        unitPrice: price,
-        quantity,
-        size,
-        totalPrice: price * quantity,
-        gender: product.gender,
-        imageUrl: product.imageUrl,
-      },
-    };
-
-    navigate("/checkout", { state: orderDetails }); // Navigate to Checkout with order details
+  const fetchDefaultAddress = async (userId) => {
+    try {
+      const addressCollection = collection(db, `users/${userId}/addresses`);
+      const snapshot = await getDocs(addressCollection);
+  
+      let defaultAddress = null;
+  
+      snapshot.forEach((doc) => {
+        const addressData = doc.data();
+        if (addressData.defaultAddress) {
+          defaultAddress = { id: doc.id, ...addressData };
+        }
+      });
+  
+      return defaultAddress;
+    } catch (error) {
+      console.error("Error fetching default address:", error);
+      return null;
+    }
   };
+
+  const handleBuyNow = async () => {
+    try {
+      if (!user) {
+        console.error("User is not authenticated.");
+        return false;
+      }
+  
+      const addressCollection = collection(db, `users/${user.uid}/addresses`);
+      const snapshot = await getDocs(addressCollection);
+      const defaultAddress = await fetchDefaultAddress(user.uid);
+  
+      if (snapshot.empty || !defaultAddress) {
+        toast.error("Please add or set a default address in your profile before proceeding to checkout.", {
+          position: "top-right",
+          className: "mt-15",
+        });
+        return; // Prevent proceeding to checkout
+      }
+  
+      // Proceed to checkout if the user has at least one address
+      navigate("/checkout", {
+        state: {
+          user: {
+            uid: user.uid,
+            name: user.displayName || "Unknown",
+            contact: user.phoneNumber || "N/A",
+            address: `${defaultAddress.region}, ${defaultAddress.street}, ${defaultAddress.postalCode}`,
+          },
+          product: {
+            id: product.id,
+            name: product.name,
+            unitPrice: price,
+            quantity,
+            size,
+            totalPrice: price * quantity,
+            gender: product.gender,
+            imageUrl: product.imageUrl,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Error checking address:", error.message);
+      toast.error("An error occurred while checking your address.", {
+        position: "top-right",
+        className:"mt-15"
+      });
+    }
+  };
+  
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer autoClose={1000}/>
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <div className="bg-white shadow-lg p-6 w-full max-w-5xl flex relative">
           <button onClick={onClose} className="absolute top-0 right-3 text-3xl text-gray-500 cursor-pointer">&times;</button>

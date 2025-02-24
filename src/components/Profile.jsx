@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaUser, FaShoppingCart } from "react-icons/fa";
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { collection, doc, getDoc, getDocs, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, updateDoc, writeBatch, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -30,6 +30,24 @@ const Profile = () => {
       fetchUserAddresses();
     }
   }, [user]);
+
+
+  const handleRemoveAddress = async (addressId) => {
+    try {
+      const addressDoc = doc(db, `users/${user.uid}/addresses`, addressId);
+      await updateDoc(addressDoc, { deleted: true }); // Optionally mark as deleted before removal
+      await deleteDoc(addressDoc); // Actually remove from Firestore
+  
+      toast.success("Address removed successfully!", {
+        position: "top-right", className:"mt-15"
+      });
+  
+      fetchUserAddresses(); // Refresh address list
+    } catch (error) {
+      console.error("Error removing address:", error.message);
+      toast.error("Failed to remove address. Please try again.",{position: "top-right", className:"mt-15"});
+    }
+  };
 
   // Fetch User Info
   const fetchUserData = async () => {
@@ -274,16 +292,25 @@ const Profile = () => {
                         {address.street || "No street provided"}, <br />
                         {address.region || "No region"}, {address.postalCode || "No postal code"}
                       </p>
-                      <button
-                        onClick={() => setDefaultAddress(address.id)}
-                        className={`px-2 py-1 text-xs border ${
-                          address.defaultAddress
-                            ? "text-white bg-blue-950 border-blue-950"
-                            : "text-blue-950 border-blue-950 cursor-pointer"
-                        }`}
-                      >
-                        {address.defaultAddress ? "Default" : "Set as Default"}
-                      </button>
+                      <div className="flex justify-between">
+                        <button
+                          onClick={() => setDefaultAddress(address.id)}
+                          className={`px-2 py-1 text-xs border ${
+                            address.defaultAddress
+                              ? "text-white bg-blue-950 border-blue-950"
+                              : "text-blue-950 border-blue-950 cursor-pointer"
+                          }`}
+                        >
+                          {address.defaultAddress ? "Default" : "Set as Default"}
+                        </button>
+
+                        <button
+                          onClick={() => handleRemoveAddress(address.id)}
+                          className="px-2 py-1 text-xs text-red-500 border border-red-500 cursor-pointer hover:bg-red-500 hover:text-white transition"
+                        >
+                          Remove
+                        </button>
+                      </div>
 
 
                     </div>
@@ -301,7 +328,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen p-20 mt-10 flex flex-col md:flex-row bg-white">
-      <ToastContainer />
+      <ToastContainer autoClose={1000} />
       {/* Sidebar */}
       <div className="w-full md:w-1/4 bg-white">
         <div className="flex items-center space-x-3 mb-6 pb-7 mr-10 border-b border-black/20">

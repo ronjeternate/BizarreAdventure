@@ -101,7 +101,7 @@ const Perfume = () => {
           <h2 className="text-lg font-semibold">Gender</h2>
           <div className="mt-2">
             {["Men", "Women", "All"].map((cat) => (
-              <label key={cat} className="flex items-center mr-4">
+              <label key={cat} className="flex items-center mr-4 cursor-pointer">
                 <input
                   type="radio"
                   name="category"
@@ -111,24 +111,6 @@ const Perfume = () => {
                   className="mr-2"
                 />
                 {cat}
-              </label>
-            ))}
-          </div>
-
-          {/* Size Filter */}
-          <h2 className="text-lg font-semibold mt-6">Size</h2>
-          <div className="mt-2">
-            {["30ml", "65ml", "All"].map(volume => (
-              <label key={volume} className="flex items-center mr-4">
-                <input
-                  type="radio"
-                  name="size"
-                  value={volume}
-                  checked={size === volume}
-                  onChange={() => setSize(volume)}
-                  className="mr-2"
-                />
-                {volume}
               </label>
             ))}
           </div>

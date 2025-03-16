@@ -1,118 +1,137 @@
 import React, { useState, useEffect } from "react";
 import { useCart } from "../components/CartItems";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc  } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "./AuthContext";
 
 const BuyPage = ({ product, onClose }) => {
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState("30ml");
-  const [price, setPrice] = useState(0);
+  const [basePrice, setBasePrice] = useState(0); // Base price from Firestore
+  const [price, setPrice] = useState(0); // Adjusted price based on size
   const { addToCart } = useCart();
-  const navigate = useNavigate(); // React Router navigation hook
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const MAX_QUANTITY = 10;
   const availableSizes = ["30ml", "65ml"];
 
-  const [user, setUser] = useState(null);
-
+  // Fetch authenticated user
   useEffect(() => {
-  const auth = getAuth();
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser ? currentUser : null);
+    });
 
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    if (currentUser) {
-      setUser(currentUser);
-    } else {
-      setUser(null);
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch product price from Firestore
+  useEffect(() => {
+    const fetchProductPrice = async () => {
+      if (!product?.id) return;
+
+      try {
+        const productRef = doc(db, "products", product.id);
+        const productSnap = await getDoc(productRef);
+
+        if (productSnap.exists()) {
+          const productData = productSnap.data();
+          setBasePrice(productData.price || 0);
+          setPrice(productData.price || 0); // Set default price for 30ml
+        } else {
+          console.error("Product not found in Firestore.");
+        }
+      } catch (error) {
+        console.error("Error fetching product price:", error);
+      }
+    };
+
+    fetchProductPrice();
+  }, [product]);
+
+  // Update price when size changes
+  useEffect(() => {
+    if (size === "30ml") {
+      setPrice(basePrice);
+    } else if (size === "65ml") {
+      setPrice(389); // Fixed price for 65ml
     }
-  });
-
-  return () => unsubscribe(); // Cleanup listener on unmount
-}, []);
-
-
-  const priceMapping = {
-    "30ml": { Men: 219, Women: 225 },
-    "65ml": { Men: 389, Women: 389 },
-  };
-
-  useEffect(() => {
-    const gender = product.gender || "Men";
-    const newPrice = priceMapping[size][gender];
-    setPrice(newPrice);
-  }, [size, product.gender]);
+  }, [size, basePrice]);
 
   const handleQuantityChange = (type) => {
-    setQuantity((prev) => Math.max(1, Math.min(prev + (type === "increase" ? 1 : -1), MAX_QUANTITY)));
+    setQuantity((prev) =>
+      Math.max(1, Math.min(prev + (type === "increase" ? 1 : -1), MAX_QUANTITY))
+    );
   };
 
   const handleAddToCart = () => {
-    const cartItem = {
-      productId: product.id, // 🔥 Ensure correct ID key
-      name: product.name,
-      unitPrice: price,
-      quantity,
-      size,
-      totalPrice: price * quantity,
-      gender: product.gender,
-      imageUrl: product.imageUrl,
-    };
-
-  addToCart(cartItem);
-  toast.success("Item added to cart!", {position:"top-right", className:"mt-15",});
-  };
-
-  const fetchDefaultAddress = async (userId) => {
     try {
-      const addressCollection = collection(db, `users/${userId}/addresses`);
-      const snapshot = await getDocs(addressCollection);
-  
-      let defaultAddress = null;
-  
-      snapshot.forEach((doc) => {
-        const addressData = doc.data();
-        if (addressData.defaultAddress) {
-          defaultAddress = { id: doc.id, ...addressData };
-        }
+      if (!user) {
+        toast.error("You must be logged in to proceed.", {
+          position: "top-right",
+          className:'mt-15',
+          autoClose: 1000,
+        });
+        return;
+      }
+
+      setAddingToCart(true);
+
+      const cartItem = {
+        productId: product.id,
+        name: product.name,
+        unitPrice: price,
+        quantity,
+        size,
+        totalPrice: price * quantity,
+        gender: product.gender,
+        imageUrl: product.imageUrl,
+      };
+
+      addToCart(cartItem);
+      toast.success("Item added to cart!", {
+        position: "top-right",
+        className: "mt-15",
       });
-  
-      return defaultAddress;
-    } catch (error) {
-      console.error("Error fetching default address:", error);
-      return null;
+
+    }catch (error) { 
+      console.error("Error processing checkout:", error);
+      toast.error("An error occurred while processing checkout.", {
+        position: "top-right",
+      });
+    } finally {
+      setAddingToCart(false);
     }
   };
 
+
   const handleBuyNow = async () => {
+    
     try {
       if (!user) {
-        console.error("User is not authenticated.");
-        return false;
-      }
-  
-      const addressCollection = collection(db, `users/${user.uid}/addresses`);
-      const snapshot = await getDocs(addressCollection);
-      const defaultAddress = await fetchDefaultAddress(user.uid);
-  
-      if (snapshot.empty || !defaultAddress) {
-        toast.error("Please add or set a default address in your profile before proceeding to checkout.", {
+        toast.error("You must be logged in to proceed.", {
           position: "top-right",
-          className: "mt-15",
+          className:'mt-15',
+          autoClose: 1000,
         });
-        return; // Prevent proceeding to checkout
+        return;
       }
-  
-      // Proceed to checkout if the user has at least one address
+
+      setIsCheckingOut(true);
+
       navigate("/checkout", {
         state: {
           user: {
             uid: user.uid,
-            name: user.displayName || "Unknown",
-            contact: user.phoneNumber || "N/A",
-            address: `${defaultAddress.region}, ${defaultAddress.street}, ${defaultAddress.postalCode}`,
           },
           product: {
             id: product.id,
@@ -126,68 +145,196 @@ const BuyPage = ({ product, onClose }) => {
           },
         },
       });
-    } catch (error) {
-      console.error("Error checking address:", error.message);
-      toast.error("An error occurred while checking your address.", {
+    } catch (error) { 
+      console.error("Error processing checkout:", error);
+      toast.error("An error occurred while processing checkout.", {
         position: "top-right",
-        className:"mt-15"
       });
+    } finally {
+      setIsCheckingOut(false);
     }
   };
-  
 
+  const handleSubmitFeedback = async () => {
+    const { currentUser } = useAuth();
+
+    if (!user) {
+      console.log("User:", user); 
+      toast.error("You must be logged in to submit feedback.");
+      return;
+    }
+  
+    if (!feedback.name || !feedback.desc || !feedback.rating) {
+      toast.error("Please fill in all fields.",{className: "mt-15",});
+      return;
+    }
+  
+    try {
+      const feedbackData = {
+        name: feedback.name,
+        desc: feedback.desc,
+        rating: feedback.rating,
+        userId: currentUser.uid,
+        timestamp: new Date(), 
+        shown: false,
+      };
+  
+      await addDoc(collection(db, "testimonials"), feedbackData);
+  
+      toast.success("Feedback submitted successfully!" ,{className: "mt-15",});
+      setShowFeedbackForm(false);
+      setFeedback({ name: "", desc: "", rating: "" }); // Clear the form
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast.error("Failed to submit feedback. Please try again.",{className: "mt-15",});
+    }
+  };
+ 
   return (
     <>
-      <ToastContainer autoClose={1000}/>
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <div className="bg-white shadow-lg p-6 w-full max-w-5xl flex relative">
-          <button onClick={onClose} className="absolute top-0 right-3 text-3xl text-gray-500 cursor-pointer">&times;</button>
-          <div className="w-1/2">
-            <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-          </div>
-          <div className="w-1/2 pl-6">
-            <h2 className="text-3xl font-semibold">{product.name}</h2>
-            <p className="text-gray-600 mt-2">{product.description || "No description available."}</p>
-            <p className="text-3xl text-blue-950 font-normal mt-5">₱ {price * quantity}</p>
-
-            <div className="mt-5 space-y-2 text-gray-600">
-              <p>Formulation: <span className="font-semibold text-black">{product.formulation || "Spray"}</span></p>
-              <p>Gender: <span className="font-semibold text-black">{product.gender || "Female"}</span></p>
+      <ToastContainer autoClose={1000} />
+      <div className="fixed inset-0 flex items-center mt-10 justify-center p-4">
+        <div>
+          <div className="bg-white shadow-lg p-6 w-full max-w-5xl flex relative">
+            <button
+              onClick={onClose}
+              className="absolute top-0 right-3 text-3xl text-gray-500 cursor-pointer"
+            >
+              &times;
+            </button>
+            <div className="w-1/2">
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
             </div>
+            <div className="w-1/2 pl-6">
+              <h2 className="text-3xl font-semibold">{product.name}</h2>
+              <p className="text-gray-600 mt-2">
+                {product.description || "No description available."}
+              </p>
+              <p className="text-3xl text-blue-950 font-normal mt-5">
+                ₱ {price * quantity}
+              </p>
 
-            <div className="mt-4">
-              <span className="text-gray-600">Size:</span>
-              <div className="flex space-x-2 mt-1 ml-10">
-                {availableSizes.map((availableSize) => (
+              <div className="mt-5 space-y-2 text-gray-600">
+                <p>
+                  Formulation:{" "}
+                  <span className="font-semibold text-black">
+                    {product.formulation || "Spray"}
+                  </span>
+                </p>
+                <p>
+                  Gender:{" "}
+                  <span className="font-semibold text-black">
+                    {product.gender || "Female"}
+                  </span>
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <span className="text-gray-600">Size:</span>
+                <div className="flex space-x-2 mt-1 ml-10">
+                  {availableSizes.map((availableSize) => (
+                    <button
+                      key={availableSize}
+                      className={`px-5 py-2 border cursor-pointer ${
+                        size === availableSize
+                          ? "bg-blue-950 text-white"
+                          : "bg-white text-black hover:bg-blue-950/30 border-blue-950"
+                      }`}
+                      onClick={() => setSize(availableSize)}
+                    >
+                      {availableSize}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-18 flex items-center space-x-2">
+                <p className="text-gray-600 font-normal">Quantity:</p>
+                <div className="border border-black/10">
                   <button
-                    key={availableSize}
-                    className={`px-5 py-2 border cursor-pointer ${size === availableSize ? "bg-blue-950 text-white" : "bg-white text-black"}`}
-                    onClick={() => setSize(availableSize)}
+                    className="px-3 py-1 border-r border-black/10 cursor-pointer"
+                    onClick={() => handleQuantityChange("decrease")}
+                    disabled={quantity <= 1}
                   >
-                    {availableSize}
+                    -
                   </button>
-                ))}
+                  <span className="mx-5">{quantity}</span>
+                  <button
+                    className="px-3 py-1 border-l border-black/10 cursor-pointer"
+                    onClick={() => handleQuantityChange("increase")}
+                    disabled={quantity >= MAX_QUANTITY}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-6 flex space-x-4">
+                <button
+                  className="flex-1 px-4 py-3 border bg-blue-950/20 text-blue-950 hover:bg-blue-950/30 cursor-pointer"
+                  onClick={handleAddToCart}
+                >
+                  {addingToCart ? "Please wait..." : "Add to cart"}
+                </button>
+                <button
+                  className={`flex-1 px-4 py-3  bg-blue-950 hover:bg-blue-950/90 text-white flex items-center justify-center ${
+                    isCheckingOut ? " cursor-not-allowed" : "cursor-pointer"
+                  }`}
+                  onClick={handleBuyNow}
+                  disabled={isCheckingOut}
+                >
+                  {isCheckingOut ? "Please wait..." : "Buy Now!"}
+                </button>
               </div>
             </div>
-
-            <div className="mt-18 flex items-center space-x-2">
-              <p className="text-gray-600 font-normal">Quantity:</p>
-              <div className="border border-black/10">
-                <button className="px-3 py-1 border-r border-black/10 cursor-pointer" onClick={() => handleQuantityChange("decrease")} disabled={quantity <= 1}>-</button>
-                <span className="mx-5">{quantity}</span>
-                <button className="px-3 py-1 border-l border-black/10 cursor-pointer" onClick={() => handleQuantityChange("increase")} disabled={quantity >= MAX_QUANTITY}>+</button>
-              </div>
-            </div>
-
-            <div className="mt-6 flex space-x-4">
-              <button className="flex-1 px-4 py-3 border bg-blue-950/20 text-blue-950 cursor-pointer" onClick={handleAddToCart}>Add to Cart</button>
-              <button className="flex-1 px-4 py-3 border bg-blue-950 text-white cursor-pointer" onClick={handleBuyNow}>Buy Now!</button>
+          </div>
+          <div className="bg-white p-5 w-full shadow-lg ">
+            <div className="flex gap-5 items-center justify-center">
+              <h2>Let us know what you think about our products:</h2>
+              <button onClick={() => {
+              if (!user) {
+                  toast.error("You must be login to submit feedback.",{className:'mt-15', autoClose:2000});
+                  return;
+                }
+                setShowFeedbackForm(true);
+              }} 
+              
+              className="px-4 py-2 bg-blue-950 text-white cursor-pointer hover:bg-blue-950/90">Submit a feedback</button>
             </div>
           </div>
         </div>
       </div>
+
+      {showFeedbackForm && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="bg-white p-6  shadow-lg w-150">
+                <h2 className="text-xl font-bold mb-4">Submit Feedback</h2>
+                <input className="w-full border border-black/70 p-2 mb-2" placeholder="Your Name" value={feedback.name} onChange={(e) => setFeedback({ ...feedback, name: e.target.value })} />
+                <textarea className="w-full h-50 border border-black/70 p-2 mb-2" placeholder="Description" value={feedback.desc} onChange={(e) => setFeedback({ ...feedback, desc: e.target.value })}></textarea>
+                <input className="w-full border border-black/70 p-2 mb-5" placeholder="Rating (1-5)" type="number" value={feedback.rating} onChange={(e) =>
+                    setFeedback({ ...feedback, rating: Math.min(5, Math.max(1, Number(e.target.value))) })
+                  }
+                    min="1"
+                    max="5" />
+                <div className="flex gap-5">
+                  <button onClick={() => setShowFeedbackForm(false)} className="flex-1 bg-gray-300 cursor-pointer">Cancel</button>
+                  <button className="flex-1 bg-blue-950 text-white p-2 cursor-pointer" onClick={handleSubmitFeedback}>Submit</button>
+                </div>
+              </div>
+            </div>
+          )}
     </>
   );
 };
 
 export default BuyPage;
+
+
+
+
+
+

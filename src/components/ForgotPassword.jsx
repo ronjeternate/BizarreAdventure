@@ -72,7 +72,7 @@ const ForgotPassword = ({ isOpen, onClose }) => {
             className="absolute top-7 flex items-center text-blue-950 hover:text-gray-800 text-lg"
             onClick={onClose}
           >
-            <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            <ArrowLeftIcon className="w-5 h-5 mr-2 cursor-pointer" />
             
           </button>
 
@@ -90,13 +90,13 @@ const ForgotPassword = ({ isOpen, onClose }) => {
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border rounded mb-3 focus:ring-2 focus:ring-blue-600"
+              className="w-full p-3 border mb-3 border-black/50"
               disabled={loading}
             />
 
             <button
               type="submit"
-              className="w-full bg-blue-950 text-white p-2 rounded-lg hover:bg-blue-800 transition flex items-center justify-center"
+              className="w-full bg-blue-950 text-white p-2 cursor-pointer  hover:bg-blue-950/90 transition flex items-center justify-center"
               disabled={loading}
             >
               {loading ? (

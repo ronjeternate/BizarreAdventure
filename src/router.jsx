@@ -17,15 +17,15 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       { path: "/login", element: <Home /> },
+      { path: "/cart", element: <Cart /> },
+      { path: "/perfume", element: <Perfume /> },
+
 
       // Protected routes
       {
         element: <ProtectedRoute />, // Wrap protected pages
         children: [
-          { path: "/perfume", element: <Perfume /> },
           { path: "/orderTracking", element: <OrderTracking /> },
-          { path: "/customerService", element: <CustomerService /> },
-          { path: "/cart", element: <Cart /> },
           { path: "/profile", element: <Profile /> },
           { path: "/checkout", element: <Checkout /> }
         ],

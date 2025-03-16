@@ -4,45 +4,56 @@ import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoginBg from "../assets/loginbg.png";
-import { auth, db } from "../firebase/firebase"; // Firebase auth and Firestore
+import { auth, db } from "../firebase/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore"; // Firestore
-import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "@heroicons/react/solid"; // Icons
+import { doc, setDoc } from "firebase/firestore";
+import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "@heroicons/react/solid";
 
-Modal.setAppElement("#root"); // Ensures accessibility
+Modal.setAppElement("#root");
 
 const SignUp = ({ isOpen, onClose }) => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Handle manual sign-up
   const handleSignUp = async () => {
-    setError(""); // Clear previous errors
+    setError("");
     if (!fullName || !email || !password) {
       toast.error("All fields are required!", { position: "top-right", className: "mt-15" });
       return;
     }
 
+    setLoading(true);
     try {
-      // Create user with email & password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Save additional user details to Firestore
       await setDoc(doc(db, "users", user.uid), {
         fullName: fullName,
         email: email,
         createdAt: new Date(),
-        phoneNumber: "", // Placeholder for future updates
       });
 
+      await auth.signOut();
+
       toast.success("Sign-up successful!", { position: "top-right", className: "mt-15" });
-      setTimeout(() => onClose(), 2000); // Close modal after 2 seconds
+
+      // ✅ Clear input fields after success
+      setFullName("");
+      setEmail("");
+      setPassword("");
+
+      setTimeout(() => {
+        setLoading(false);
+        onClose();
+      }, 2000);
     } catch (err) {
-      toast.error(err.message, { position: "top-right" });
+      toast.error(err.message, { position: "top-right", className: "mt-15" });
+      setLoading(false);
     }
   };
 
@@ -59,25 +70,20 @@ const SignUp = ({ isOpen, onClose }) => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="bg-white shadow-lg w-[1000px] h-[600px] flex relative"
       >
-        {/* Toast Container for Notifications */}
         <ToastContainer autoClose={1000} />
 
-        {/* Left Side: Image */}
         <div className="w-3/4">
           <img src={LoginBg} alt="Sign Up" className="w-full h-full object-cover" />
         </div>
 
-        {/* Right Side: Sign-Up Form */}
         <div className="w-1/2 p-8 flex flex-col justify-center">
-          {/* Back Button */}
           <button
-            className="absolute top-7 flex items-center text-blue-950 hover:text-gray-800 text-lg"
+            className="absolute top-7 flex items-center text-blue-950 cursor-pointer hover:text-gray-800 text-lg"
             onClick={onClose}
           >
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
           </button>
 
-          {/* Title */}
           <h2 className="text-lg font-semibold text-center mb-3">
             Sign up for <span className="text-blue-950">BIZARRE</span>
           </h2>
@@ -85,51 +91,50 @@ const SignUp = ({ isOpen, onClose }) => {
             Create an account to start shopping with <br /> <span className="text-blue-950">B I Z A R R E</span>.
           </p>
 
-          {/* Input Fields */}
           <input
             type="text"
             placeholder="Enter full name"
-            className="w-full p-3 border rounded mb-3 focus:ring-2 focus:ring-blue-600"
+            className="w-full p-3 border border-black/30  mb-3 "
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
           <input
             type="email"
             placeholder="Enter email address"
-            className="w-full p-3 border rounded mb-3 focus:ring-2 focus:ring-blue-600"
+            className="w-full p-3 border border-black/30  mb-3 "
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          {/* Password Field with Eye Icon */}
           <div className="relative w-full">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Enter password"
-              className="w-full p-3 border rounded mb-4 focus:ring-2 focus:ring-blue-600 pr-10"
+              className="w-full p-3 border border-black/30  mb-4 "
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            {/* Toggle Password Visibility */}
             <button
               type="button"
-              className="absolute inset-y-0 right-4 bottom-4 flex items-center text-blue-950"
+              className="absolute inset-y-0 right-4 bottom-4 flex items-center cursor-pointer text-blue-950 hover:text-blue-950/90"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOffIcon className="w-5 h-5" />
-              ) : (
                 <EyeIcon className="w-5 h-5" />
+              ) : (
+                <EyeOffIcon className="w-5 h-5" />
               )}
             </button>
           </div>
 
-          {/* Sign-Up Button */}
           <button
             onClick={handleSignUp}
-            className="w-full bg-blue-950 text-white p-2 mt-3 rounded-lg hover:bg-blue-800 transition"
+            disabled={loading}
+            className={`w-full bg-blue-950 text-white p-2 mt-3 cursor-pointer transition ${
+              loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-950/90"
+            }`}
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </div>
       </motion.div>

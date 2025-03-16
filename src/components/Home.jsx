@@ -11,6 +11,10 @@ import Testimonials from "./Testimonials";
 import Login from "./Login";
 import { useAuth } from "../components/AuthContext";
 import { NavLink} from "react-router-dom";
+import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
+import footerBg from "../assets/Background.png";
+import logo from "../assets/wlogo.png";
+
 
 
 const Home = () => {
@@ -79,14 +83,7 @@ const Home = () => {
             A little extra luxury goes along the way!
           </p>
 
-          <NavLink to="/perfume" className="tracking-[.2em] text-white text-[20px] font-[Aboreto] p-5 pl-15 pr-15 bg-blue-950">Shop now!</NavLink>
-
-          {/* <a
-            href="/perfume"
-            className="tracking-[.2em] text-white text-[20px] font-[Aboreto] p-5 pl-15 pr-15 bg-blue-950"
-          >
-            Shop now!
-          </a> */}
+          <NavLink to="/perfume" className="tracking-[.2em] text-white text-[20px] font-[Aboreto] p-5 pl-15 pr-15  bg-blue-950 hover:bg-blue-950/90 ">Shop now!</NavLink>
         </div>
 
         <motion.div
@@ -126,7 +123,7 @@ const Home = () => {
           <a
             href="https://www.facebook.com/profile.php?id=61553872173314"
             target="_blank"
-            className="tracking-[.2em] text-white text-[20px] font-[Aboreto] p-5 pl-15 pr-15 bg-blue-950"
+            className="tracking-[.2em] text-white text-[20px] font-[Aboreto] p-5 pl-15 pr-15 bg-blue-950 hover:bg-blue-950/90"
           >
             Learn more about us!
           </a>
@@ -146,28 +143,75 @@ const Home = () => {
           </div>
 
           <div className="flex items-center justify-center">
-            <a href="/perfume"><img src={poloSport} alt="Polo Sport" className="w-70" /></a>
-            <a href="/perfume"><img src={Enchante} alt="Enchante" className="w-70" /></a>
-            <a href="/perfume"><img src={bestSeller} alt="BestSeller" className="w-70" /></a>
-            <a href="/perfume"><img src={Antheia} alt="Antheia" className="w-70" /></a>
-            <a href="/perfume"><img src={Slick} alt="Slick" className="w-70" /></a>
+            <img src={poloSport} alt="Polo Sport" className="w-70" />
+            <img src={Enchante} alt="Enchante" className="w-70" />
+            <img src={bestSeller} alt="BestSeller" className="w-70" />
+            <img src={Antheia} alt="Antheia" className="w-70" />
+            <img src={Slick} alt="Slick" className="w-70" />
           </div>
         </div>
       </div>
 
       {/* TESTIMONIALS */}
-      <div id="testimonials" className="w-full py-30 bg-white">
+      <div id="testimonials" className="w-full py-40  bg-white">
         <div className="text-left pl-23">
           <h1 className="text-blue-950 font-[Bebas] text-[100px] leading-none">
             Testimonials</h1>
             
         </div>
-        <Testimonials/>
-      </div>
+          <Testimonials/>
+        </div>
 
       
-    </div>
       </div>
+      <footer
+        className="text-white py-10 bg-cover bg-center"
+        style={{ backgroundImage: `url(${footerBg})` }}
+      >
+        <div className="container mx-auto flex justify-between  px-10">
+          {/* Logo Section */}
+          <div className="flex flex-col items-center w-1/3">
+            <img src={logo} alt="Bizarre Logo" className="w-20" />
+            <h1 className="text-lg font-bold mt-2">BIZARRE</h1>
+          </div>
+
+          {/* Quick Links */}
+          <div className="text-left">
+            <h2 className="text-lg font-bold">Quick links</h2>
+            <ul className="space-y-1 mt-2">
+              <li>Home</li>
+              <li>Perfume</li>
+              <li>Order Tracking</li>
+              <li>Cart</li>
+              <li>Profile</li>
+            </ul>
+          </div>
+
+          {/* Contact Section */}
+          <div>
+            <h2 className="text-lg font-bold">Contact</h2>
+            <p className="mt-2">09751883932</p>
+          </div>
+
+          {/* Social Media Links */}
+          <div>
+            <h2 className="text-lg font-bold">Follow us</h2>
+            <div className="items-center space-x-3 mt-2">
+              <a href="#" className="flex items-center space-x-1">
+                <FaFacebook /> <span>Bizarre Scents</span>
+              </a>
+              <a href="#" className="flex items-center space-x-1">
+                <FaInstagram /> <span>@bizarrescentsph</span>
+              </a>
+              <a href="#" className="flex items-center space-x-1">
+                <FaTiktok /> <span>bizarrescentsofficial</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
   );
 };
 

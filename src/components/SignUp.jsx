@@ -8,6 +8,11 @@ import { auth, db } from "../firebase/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "@heroicons/react/solid";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+
 
 Modal.setAppElement("#root");
 
@@ -40,6 +45,8 @@ const SignUp = ({ isOpen, onClose }) => {
 
       await auth.signOut();
 
+      await sendWelcomeEmail(email, fullName);
+
       toast.success("Sign-up successful!", { position: "top-right", className: "mt-15" });
 
       // ✅ Clear input fields after success
@@ -56,6 +63,21 @@ const SignUp = ({ isOpen, onClose }) => {
       setLoading(false);
     }
   };
+
+  const sendWelcomeEmail = async (userEmail, userName) => {
+    try {
+        await fetch("http://localhost:5000/send-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmail, name: userName }),
+        });
+
+        console.log("Welcome email sent!");
+    } catch (error) {
+        console.error("Error sending email:", error);
+    }
+};
+
 
   return (
     <Modal
@@ -91,40 +113,64 @@ const SignUp = ({ isOpen, onClose }) => {
             Create an account to start shopping with <br /> <span className="text-blue-950">B I Z A R R E</span>.
           </p>
 
-          <input
-            type="text"
-            placeholder="Enter full name"
-            className="w-full p-3 border border-black/30  mb-3 "
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
-          <input
-            type="email"
-            placeholder="Enter email address"
-            className="w-full p-3 border border-black/30  mb-3 "
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <Box
+            component="form"
+            sx={{ "& > :not(style)": { width: "100%" } }} // Full width
+            noValidate
+            autoComplete="off"
+          >
+            <TextField
+              id="fullName"
+              label="Enter full name"
+              variant="outlined"
+              fullWidth
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </Box>
+          <Box
+            component="form"
+            sx={{ "& > :not(style)": { width: "100%" } }} // Full width styling
+            noValidate
+            autoComplete="off"
+          >
+            <TextField
+              id="email"
+              label="Enter email address"
+              type="email"
+              variant="outlined"
+              fullWidth
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Box>
 
           <div className="relative w-full">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
-              className="w-full p-3 border border-black/30  mb-4 "
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-4 bottom-4 flex items-center cursor-pointer text-blue-950 hover:text-blue-950/90"
-              onClick={() => setShowPassword(!showPassword)}
+            <Box
+              component="form"
+              sx={{ "& > :not(style)": { m: 1, width: "100%" } }} // Full width styling
+              noValidate
+              autoComplete="off"
             >
-              {showPassword ? (
-                <EyeIcon className="w-5 h-5" />
-              ) : (
-                <EyeOffIcon className="w-5 h-5" />
-              )}
-            </button>
+              <TextField
+                id="password"
+                label="Enter password"
+                type={showPassword ? "text" : "password"}
+                variant="outlined"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <EyeIcon className="w-5 h-5" /> : <EyeOffIcon className="w-5 h-5" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
           </div>
 
           <button

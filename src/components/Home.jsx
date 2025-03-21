@@ -14,6 +14,7 @@ import { NavLink} from "react-router-dom";
 import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 import footerBg from "../assets/Background.png";
 import logo from "../assets/wlogo.png";
+import { Link } from "react-router-dom";
 
 
 
@@ -179,11 +180,11 @@ const Home = () => {
           <div className="text-left">
             <h2 className="text-lg font-bold">Quick links</h2>
             <ul className="space-y-1 mt-2">
-              <li>Home</li>
-              <li>Perfume</li>
-              <li>Order Tracking</li>
-              <li>Cart</li>
-              <li>Profile</li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/perfume">Perfume</Link></li>
+            <li><Link to="/orderTracking">Order Tracking</Link></li>
+            <li><Link to="/cart">Cart</Link></li>
+            <li><Link to="/profile">Profile</Link></li>
             </ul>
           </div>
 
@@ -197,13 +198,13 @@ const Home = () => {
           <div>
             <h2 className="text-lg font-bold">Follow us</h2>
             <div className="items-center space-x-3 mt-2">
-              <a href="#" className="flex items-center space-x-1">
+              <a href="https://www.facebook.com/profile.php?id=61553872173314" target="blank" className="flex items-center space-x-1">
                 <FaFacebook /> <span>Bizarre Scents</span>
               </a>
-              <a href="#" className="flex items-center space-x-1">
+              <a href="https://www.instagram.com/bizarrescentsph/" target="blank" className="flex items-center space-x-1 mt-2">
                 <FaInstagram /> <span>@bizarrescentsph</span>
               </a>
-              <a href="#" className="flex items-center space-x-1">
+              <a href="https://www.tiktok.com/@bizarrescentsofficial" target="blank" className="flex items-center space-x-1 mt-2">
                 <FaTiktok /> <span>bizarrescentsofficial</span>
               </a>
             </div>

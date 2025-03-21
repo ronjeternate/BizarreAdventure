@@ -9,6 +9,10 @@ import Slick from "../assets/slick.png";
 import bestSeller from "../assets/bestSeller.png";
 import Modal from "./Modal";
 import BuyPage from "./BuyPage";
+import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
+import footerBg from "../assets/Background.png";
+import logo from "../assets/wlogo.png";
+import { Link } from "react-router-dom";
 
 const Perfume = () => {
   const [products, setProducts] = useState([]);
@@ -167,6 +171,53 @@ const Perfume = () => {
           />
         )}
       </Modal>
+
+      <footer
+        className="text-white py-10 bg-cover bg-center"
+        style={{ backgroundImage: `url(${footerBg})` }}
+      >
+        <div className="container mx-auto flex justify-between  px-10">
+          {/* Logo Section */}
+          <div className="flex flex-col items-center w-1/3">
+            <img src={logo} alt="Bizarre Logo" className="w-20" />
+            <h1 className="text-lg font-bold mt-2">BIZARRE</h1>
+          </div>
+
+          {/* Quick Links */}
+          <div className="text-left">
+            <h2 className="text-lg font-bold">Quick links</h2>
+            <ul className="space-y-1 mt-2">
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/perfume">Perfume</Link></li>
+            <li><Link to="/orderTracking">Order Tracking</Link></li>
+            <li><Link to="/cart">Cart</Link></li>
+            <li><Link to="/profile">Profile</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact Section */}
+          <div>
+            <h2 className="text-lg font-bold">Contact</h2>
+            <p className="mt-2">09751883932</p>
+          </div>
+
+          {/* Social Media Links */}
+          <div>
+            <h2 className="text-lg font-bold">Follow us</h2>
+            <div className="items-center space-x-3 mt-2">
+              <a href="https://www.facebook.com/profile.php?id=61553872173314" target="blank" className="flex items-center space-x-1">
+                <FaFacebook /> <span>Bizarre Scents</span>
+              </a>
+              <a href="https://www.instagram.com/bizarrescentsph/" target="blank" className="flex items-center space-x-1 mt-2">
+                <FaInstagram /> <span>@bizarrescentsph</span>
+              </a>
+              <a href="https://www.tiktok.com/@bizarrescentsofficial" target="blank" className="flex items-center space-x-1 mt-2">
+                <FaTiktok /> <span>bizarrescentsofficial</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

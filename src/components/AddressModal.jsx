@@ -26,7 +26,7 @@ const AddressModal = ({ onClose, onAddressAdded }) => {
 
   const validateForm = () => {
     for (let key in formData) {
-      if (key !== "additionalInfo" && !formData[key].trim()) {
+      if (key !== "additionalInfo" && key !== "defaultAddress" && typeof formData[key] === "string" && !formData[key].trim()) {
         toast.error("Please fill in all required fields.", { className: "mt-15" });
         return false;
       }
@@ -99,8 +99,8 @@ const AddressModal = ({ onClose, onAddressAdded }) => {
           <input type="text" name="additionalInfo" placeholder="Additional Information (optional)" value={formData.additionalInfo} onChange={handleChange} className="w-full p-2 border border-black/30" />
 
           <div className="flex justify-end gap-4 mt-4">
-            <button onClick={disabled ? null : onClose} className={`px-12 py-2 bg-gray-100 text-black text-sm ${disabled ? "opacity-50 cursor-not-allowed" : ""}`} disabled={disabled}>Cancel</button>
-            <button onClick={handleSubmit} className={`px-7 py-2 bg-blue-950 text-white text-sm ${disabled ? "opacity-50 cursor-not-allowed" : ""}`} disabled={disabled}>Add Address</button>
+            <button onClick={disabled ? null : onClose} className={`px-12 py-2 bg-gray-100 cursor-pointer text-black text-sm ${disabled ? "opacity-50 cursor-not-allowed" : ""}`} disabled={disabled}>Cancel</button>
+            <button onClick={handleSubmit} className={`px-7 py-2 bg-blue-950 text-white cursor-pointer text-sm ${disabled ? "opacity-50 cursor-not-allowed" : ""}`} disabled={disabled}>Add Address</button>
           </div>
         </div>
       </div>

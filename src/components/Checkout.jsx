@@ -99,14 +99,14 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     const currentUser = auth.currentUser;
-
+  
     if (!currentUser) {
-      toast.error("You must be logged in to place an order.", {className:"mt-15"});
+      toast.error("You must be logged in to place an order.", { className: "mt-15" });
       return;
     }
-
+  
     setIsPlacingOrder(true); // 🔄 Start loading
-
+  
     try {
       const orderData = {
         userId: currentUser.uid,
@@ -119,23 +119,37 @@ const Checkout = () => {
         orderDate: serverTimestamp(),
         status: "Pending",
       };
-
-      await addDoc(collection(db, `users/${currentUser.uid}/orders`), orderData);
-
+  
+      const orderRef = await addDoc(collection(db, `users/${currentUser.uid}/orders`), orderData);
+      const orderId = orderRef.id; // Get the generated order ID
+  
+      // ✅ Call the backend to send the email
+      await fetch("http://localhost:5000/send-order-confirmation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: currentUser.email,
+          name: defaultAddress.fullName,
+          orderId,
+          status: "Pending",
+        }),
+      });
+  
       toast.success("Order placed successfully!", {
         position: "top-right",
-        className:"mt-15",
+        className: "mt-15",
         autoClose: 1000,
       });
-
+  
       setTimeout(() => navigate("/orderTracking"), 1500);
     } catch (error) {
       console.error("Error placing order:", error);
-      toast.error("Please add or set a defualt address to continue.",{className:'mt-15', autoClose:2000});
+      toast.error("Please add or set a default address to continue.", { className: "mt-15", autoClose: 2000 });
     } finally {
       setIsPlacingOrder(false); // ✅ Stop loading
     }
   };
+  
 
   return (
     <div className="max-w-full mx-auto p-10 mt-10">

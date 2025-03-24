@@ -1,28 +1,29 @@
-import { useEffect, useState } from "react";
-import { db } from "../firebase/firebase";
-import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { Link } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import Packed from '../assets/packed.png';
-import Shipped from '../assets/shipped.png';
-import Completed from '../assets/completed.png';
-
+import { useEffect, useState } from "react"
+import { db } from "../firebase/firebase"
+import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore"
+import { getAuth } from "firebase/auth"
+import { Link } from "react-router-dom"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import Packed from "../assets/packed.png"
+import Shipped from "../assets/shipped.png"
+import Completed from "../assets/completed.png"
 
 export default function OrderTracking() {
-  const [orders, setOrders] = useState([]);
-  const [error, setError] = useState(null);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [filter, setFilter] = useState("all");
-  const [loading, setLoading] = useState(false);
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const [orders, setOrders] = useState([])
+  const [error, setError] = useState(null)
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [filter, setFilter] = useState("all")
+  const [loading, setLoading] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState("")
+  const auth = getAuth()
+  const user = auth.currentUser
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
 
-    const userOrdersRef = collection(db, "users", user.uid, "orders");
+    const userOrdersRef = collection(db, "users", user.uid, "orders")
 
     const unsubscribe = onSnapshot(
       userOrdersRef,
@@ -30,61 +31,70 @@ export default function OrderTracking() {
         const fetchedOrders = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
-        setOrders(fetchedOrders);
+        }))
+        setOrders(fetchedOrders)
       },
       (error) => {
-        console.error("Error fetching orders:", error);
-        setError("Failed to load orders. Please try again.");
-      }
-    );
-    console.log("selectedOrder:", selectedOrder);
+        console.error("Error fetching orders:", error)
+        setError("Failed to load orders. Please try again.")
+      },
+    )
+    console.log("selectedOrder:", selectedOrder)
 
-
-    return () => unsubscribe();
-  }, [user]);
+    return () => unsubscribe()
+  }, [user])
 
   const handleCancelOrder = async () => {
-    if (!selectedOrder) return;
+    if (!selectedOrder || !cancelReason.trim()) return
 
-    setLoading(true);
+    setLoading(true)
 
     try {
-      const orderRef = doc(db, "users", user.uid, "orders", selectedOrder.id);
+      const orderRef = doc(db, "users", user.uid, "orders", selectedOrder.id)
       await updateDoc(orderRef, {
         status: "Cancelled",
-      });
+        cancelReason: cancelReason,
+        cancelledAt: new Date(),
+      })
 
-      setSelectedOrder(null); // Close the modal after canceling
-      toast.success("Order has been canceled successfully." , {className:"mt-15"});
+      setSelectedOrder(null) // Close the modal after canceling
+      setShowCancelModal(false)
+      setCancelReason("")
+      toast.success("Order has been canceled successfully.", { className: "mt-15" })
     } catch (error) {
-      console.error("Error canceling order:", error);
-      toast.error("Failed to cancel order. Please try again." );
-    }finally{
-      setLoading(false);
+      console.error("Error canceling order:", error)
+      toast.error("Failed to cancel order. Please try again.")
+    } finally {
+      setLoading(false)
     }
-  };
+  }
+
+  const openCancelModal = () => {
+    setShowCancelModal(true)
+  }
+
+  const closeCancelModal = () => {
+    setShowCancelModal(false)
+    setCancelReason("")
+  }
 
   const handleFilterChange = (e) => {
-    setFilter(e.target.value);
-  };
+    setFilter(e.target.value)
+  }
 
   const filteredOrders = orders
     .filter((order) => order.status !== "Cancelled" && order.status !== "Completed") // Exclude cancelled orders
     .filter((order) => {
-      if (filter === "all") return true;
-      return order.products.some((product) => product.gender === filter);
-    });
-
+      if (filter === "all") return true
+      return order.products.some((product) => product.gender === filter)
+    })
 
   return (
     <div className="min-h-screen p-20 py-30">
       <ToastContainer autoClose={1000} />
       {/* Header Section */}
       <div className="flex justify-end gap-10 items-center mb-5 mt-5">
-        <h2 className="absolute left-30 text-blue-950 font-[Bebas] text-[100px] leading-none">
-          ORDERS:
-        </h2>
+        <h2 className="absolute left-30 text-blue-950 font-[Bebas] text-[100px] leading-none">ORDERS:</h2>
         <select
           className="border p-2 cursor-pointer"
           value={filter}
@@ -112,9 +122,8 @@ export default function OrderTracking() {
                 <div key={order.id} className="p-5 border-b bg-white text-gray-500 text-sm">
                   No items in this order.
                 </div>
-              );
+              )
             }
-
 
             return (
               <div
@@ -123,20 +132,17 @@ export default function OrderTracking() {
                 onClick={() => setSelectedOrder(order)}
               >
                 <img
-                  src={order.products[0].imageUrl}
+                  src={order.products[0].imageUrl || "/placeholder.svg"}
                   alt={order.products[0].name}
                   className="w-20 h-20 object-cover"
                 />
                 <div className="flex-1">
-
                   <p className="font-semibold text-lg">Order id: {order.products[0].id}</p>
                   <p className="text-gray-500 text-sm">
                     Gender: {order.products[0].gender} | Size: {order.products[0].size}
                   </p>
                   {order.products.length > 1 && (
-                    <p className="text-blue-950 text-sm">
-                      This order has +{order.products.length - 1} more items
-                    </p>
+                    <p className="text-blue-950 text-sm">This order has +{order.products.length - 1} more items</p>
                   )}
                 </div>
                 <div className="text-right">
@@ -144,7 +150,7 @@ export default function OrderTracking() {
                   <p className="text-gray-500 text-sm">Status: {order.status}</p>
                 </div>
               </div>
-            );
+            )
           })
         )}
       </div>
@@ -155,9 +161,7 @@ export default function OrderTracking() {
           <div className="bg-gray-200 p-8 shadow-lg max-w-200 w-full">
             {/* Close Button */}
             <div className="flex justify-between mb-5">
-              <p className="text-blue-950 text-lg font-bold">
-                Order id: {selectedOrder.id}
-              </p>
+              <p className="text-blue-950 text-lg font-bold">Order id: {selectedOrder.id}</p>
               <button
                 onClick={() => setSelectedOrder(null)}
                 className="text-gray-600 hover:text-gray-900 text-xl cursor-pointer"
@@ -176,7 +180,7 @@ export default function OrderTracking() {
                 }`}
               >
                 <div className="flex justify-center gap-3 items-center">
-                  <img src={Packed} alt="" className="w-10 h-10"/>
+                  <img src={Packed || "/placeholder.svg"} alt="" className="w-10 h-10" />
                   <div>
                     <p className="font-semibold">Packed</p>
                     <p className="text-sm">Complete packing</p>
@@ -193,7 +197,7 @@ export default function OrderTracking() {
                 }`}
               >
                 <div className="flex justify-center gap-3 items-center">
-                  <img src={Shipped} alt="" className="w-10 h-10"/>
+                  <img src={Shipped || "/placeholder.svg"} alt="" className="w-10 h-10" />
                   <div>
                     <p className="font-semibold">Shipped</p>
                     <p className="text-sm">Out for delivery</p>
@@ -210,7 +214,7 @@ export default function OrderTracking() {
                 }`}
               >
                 <div className="flex justify-center gap-3 items-center">
-                  <img src={Completed} alt="" className="w-10 h-10"/>
+                  <img src={Completed || "/placeholder.svg"} alt="" className="w-10 h-10" />
                   <div>
                     <p className="font-semibold">Completed</p>
                     <p className="text-sm">Order complete</p>
@@ -219,12 +223,11 @@ export default function OrderTracking() {
               </div>
             </div>
 
-
             {/* Shipping Details */}
             <div className="border-t border-black/20 pt-4 mb-4">
               <p className="font-semibold mb-2">Shipping Details</p>
               <p className="text-black/50">
-                <p>Name: {selectedOrder.customerName}</p> 
+                <p>Name: {selectedOrder.customerName}</p>
               </p>
               <p className="text-black/50">
                 <p>Address: {selectedOrder.customerAddress}</p>
@@ -240,7 +243,7 @@ export default function OrderTracking() {
               {selectedOrder.products.map((product) => (
                 <div key={product.id} className="flex items-center gap-4 mt-2">
                   <img
-                    src={product.imageUrl}
+                    src={product.imageUrl || "/placeholder.svg"}
                     alt={product.name}
                     className="w-20 h-20 object-cover"
                   />
@@ -253,9 +256,11 @@ export default function OrderTracking() {
                       <p className="text-black/50">Quantity: {product.quantity}</p>
                     </div>
                     <div>
-                      <p className="font-semibold">{product.unitPrice} x {product.quantity} = {product.totalPrice}</p>
+                      <p className="font-semibold">
+                        {product.unitPrice} x {product.quantity} = {product.totalPrice}
+                      </p>
                     </div>
-                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -264,8 +269,8 @@ export default function OrderTracking() {
             <div className="border-t mb-2 border-black/20 pt-4">
               <p className="font-semibold mb-2">Order Summary</p>
               <div className="flex justify-between text-black/50">
-              <span>Product Price</span>
-              <span>₱{selectedOrder?.products?.[0]?.totalPrice ?? "N/A"}</span>
+                <span>Product Price</span>
+                <span>₱{selectedOrder?.products?.[0]?.totalPrice ?? "N/A"}</span>
               </div>
               <div className="flex justify-between text-black/50">
                 <span>Shipping Fee</span>
@@ -276,31 +281,79 @@ export default function OrderTracking() {
                 <span className="border-t">₱{selectedOrder.total}</span>
               </div>
             </div>
-            
 
-            {/* Cancel Order Button */}
-            
             {/* Cancel Order Button */}
             {!["Shipped", "Completed", "Cancelled"].includes(selectedOrder.status) && (
               <button
-              onClick={handleCancelOrder}
-              className={`w-40 mt-4 bg-blue-950/20 hover:bg-blue-950/40 text-blue-950 flex items-center justify-center px-4 py-2 border border-blue-950 ${
-                loading ? "cursor-not-allowed opacity-75" : "cursor-pointer"
-              }`}
-              disabled={loading}
-            >
-              {loading && (
-                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="blue" strokeWidth="15" fill="none" />
-                </svg>
-              )}
-              {loading ? "Cancelling..." : "Cancel Order"}
-            </button>
-            
+                onClick={openCancelModal}
+                className="w-40 mt-4 cursor-pointer bg-blue-950/20 hover:bg-blue-950/40 text-blue-950 flex items-center justify-center px-4 py-2 border border-blue-950"
+              >
+                Cancel Order
+              </button>
             )}
           </div>
         </div>
       )}
+
+      {/* Cancel Reason Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 backdrop-blur-sm flex bg-black/50 justify-center items-center z-50">
+          <div className="bg-white p-6  shadow-lg max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-blue-950">Cancel Order</h3>
+              <button onClick={closeCancelModal} className="text-gray-600 hover:text-gray-900 text-xl cursor-pointer">
+                ✕
+              </button>
+            </div>
+
+            <p className="mb-4 text-gray-700">Please provide a reason for cancelling this order:</p>
+
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-md mb-4 min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-950/50"
+              placeholder="Enter your reason for cancellation..."
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={closeCancelModal}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                className={`px-4 py-2 bg-blue-950 text-white rounded-md hover:bg-blue-900 flex items-center justify-center ${
+                  loading || !cancelReason.trim() ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+                disabled={loading || !cancelReason.trim()}
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeDasharray="32"
+                        strokeDashoffset="8"
+                      />
+                    </svg>
+                    Processing...
+                  </>
+                ) : (
+                  "Confirm Cancellation"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }
+

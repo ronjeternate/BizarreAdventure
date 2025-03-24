@@ -4,6 +4,7 @@ import { db, auth } from "../firebase/firebase";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
+import { Box, TextField } from "@mui/material";
 
 const AddressModal = ({ onClose, onAddressAdded }) => {
   const [formData, setFormData] = useState({
@@ -88,16 +89,90 @@ const AddressModal = ({ onClose, onAddressAdded }) => {
         </div>
 
         <div className="space-y-7">
-          <div className="flex gap-4">
-            <input type="text" name="fullName" placeholder="Fullname " value={formData.fullName} onChange={handleChange} className="w-1/2 p-2 border border-black/30" />
-            <input type="text" name="phoneNumber" placeholder="Phone Number " value={formData.phoneNumber} onChange={handleChange} className="w-1/2 p-2 border border-black/30" />
-          </div>
+          <Box component="form" noValidate autoComplete="off" sx={{ width: "100%" }}>
+            {/* Full Name & Phone Number */}
+            <div className="flex gap-4">
+              <TextField
+                id="fullName"
+                name="fullName"
+                label="Full Name"
+                type="text"
+                variant="outlined"
+                fullWidth
+                value={formData.fullName}
+                onChange={handleChange}
+              />
+              <TextField
+                id="phoneNumber"
+                name="phoneNumber"
+                label="Phone Number"
+                type="tel"
+                variant="outlined"
+                fullWidth
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                inputProps={{
+                  inputMode: "numeric", // Mobile-friendly numeric keyboard
+                  pattern: "[0-9]*", // Restricts input to numbers
+                }}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/[^0-9]/g, ""); // Prevents non-numeric characters
+                }}
+              />
+            </div>
 
-          <input type="text" name="region" placeholder="Region, Province, City, Barangay " value={formData.region} onChange={handleChange} className="w-full p-2 border border-black/30" />
-          <input type="text" name="postalCode" placeholder="Postal Code" value={formData.postalCode} onChange={handleChange} className="w-full p-2 border border-black/30" />
-          <input type="text" name="street" placeholder="Street Name, Building, House No. " value={formData.street} onChange={handleChange} className="w-full p-2 border border-black/30" />
-          <input type="text" name="additionalInfo" placeholder="Additional Information (optional)" value={formData.additionalInfo} onChange={handleChange} className="w-full p-2 border border-black/30" />
+            {/* Region */}
+            <TextField
+              id="region"
+              name="region"
+              label="Region, Province, City, Barangay"
+              type="text"
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 2 }}
+              value={formData.region}
+              onChange={handleChange}
+            />
 
+            {/* Postal Code */}
+            <TextField
+              id="postalCode"
+              name="postalCode"
+              label="Postal Code"
+              type="text"
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 2 }}
+              value={formData.postalCode}
+              onChange={handleChange}
+            />
+
+            {/* Street */}
+            <TextField
+              id="street"
+              name="street"
+              label="Street Name, Building, House No."
+              type="text"
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 2 }}
+              value={formData.street}
+              onChange={handleChange}
+            />
+
+            {/* Additional Info */}
+            <TextField
+              id="additionalInfo"
+              name="additionalInfo"
+              label="Additional Information (optional)"
+              type="text"
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 2 }}
+              value={formData.additionalInfo}
+              onChange={handleChange}
+            />
+          </Box>
           <div className="flex justify-end gap-4 mt-4">
             <button onClick={disabled ? null : onClose} className={`px-12 py-2 bg-gray-100 cursor-pointer text-black text-sm ${disabled ? "opacity-50 cursor-not-allowed" : ""}`} disabled={disabled}>Cancel</button>
             <button onClick={handleSubmit} className={`px-7 py-2 bg-blue-950 text-white cursor-pointer text-sm ${disabled ? "opacity-50 cursor-not-allowed" : ""}`} disabled={disabled}>Add Address</button>

@@ -8,8 +8,9 @@ import { db } from "../firebase/firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddressModal from "./AddressModal";
-import { motion, AnimatePresence } from "framer-motion";
-import Logo from '/titlelogo.png'
+import Packed from "../assets/packed.png"
+import Shipped from "../assets/shipped.png"
+import Completed from "../assets/completed.png"
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("My Purchases");
@@ -223,6 +224,7 @@ const Profile = () => {
                           {order.products.length > 1 && (
                             <p className="text-blue-950 text-sm">This order has +{order.products.length - 1} more items</p>
                           )}
+                          <p className="text-[14px] text-red-600 ">{order.cancelReason ||  "Cancelled by seller"}</p>
                         </div>
                         <div className="text-right">
                           <p className="font-semibold">₱{order.total}</p>
@@ -267,6 +269,7 @@ const Profile = () => {
                           <p className="text-gray-500 text-sm">
                             <span className="text-red-600">{order.status}</span>
                           </p>
+                          
                         </div>
                       </div>
                     ))
@@ -325,10 +328,9 @@ const Profile = () => {
                   {/* Close Button */}
                   <div className="flex justify-between mb-5">
                   {selectedOrder && (
-                    <p className="text-blue-950 text-lg font-bold opacity-100">
-                      This order has been {selectedOrder.status}.
-                    </p>
+                    <p className="text-red-600 ">{selectedOrder.cancelReason ||  "Cancelled by seller"} </p>
                   )}
+                  
 
                     <button
                       onClick={() => setSelectedOrder(null)}
@@ -349,8 +351,13 @@ const Profile = () => {
                           : "bg-gray-100 text-gray-600 border-gray-300"
                       }`}
                     >
-                      <p className="font-semibold">Packed</p>
-                      <p className="text-sm">Complete packing</p>
+                      <div className="flex justify-center gap-3 items-center">
+                        <img src={Packed || "/placeholder.svg"} alt="" className="w-10 h-10" />
+                        <div>
+                          <p className="font-semibold">Packed</p>
+                          <p className="text-sm">Complete packing</p>
+                        </div>
+                      </div>
                     </div>
 
                     <div
@@ -360,19 +367,29 @@ const Profile = () => {
                           : "bg-gray-100 text-gray-600 border-gray-300"
                       }`}
                     >
-                      <p className="font-semibold">Shipped</p>
-                      <p className="text-sm">On delivery</p>
+                      <div className="flex justify-center gap-3 items-center">
+                                        <img src={Shipped || "/placeholder.svg"} alt="" className="w-10 h-10" />
+                                        <div>
+                                          <p className="font-semibold">Shipped</p>
+                                          <p className="text-sm">Out for delivery</p>
+                                        </div>
+                                      </div>
                     </div>
 
                     <div
                       className={`flex-1 text-center p-2 border ${
-                        selectedOrder?.status === "completed"
+                        selectedOrder?.status === "Completed"
                           ? "bg-blue-100 text-blue-950 border-blue-500"
                           : "bg-gray-100 text-gray-600 border-gray-300"
                       }`}
                     >
-                      <p className="font-semibold">Completed</p>
-                      <p className="text-sm">Order completed</p>
+                      <div className="flex justify-center gap-3 items-center">
+                                        <img src={Completed || "/placeholder.svg"} alt="" className="w-10 h-10" />
+                                        <div>
+                                          <p className="font-semibold">Completed</p>
+                                          <p className="text-sm">Order complete</p>
+                                        </div>
+                                      </div>
                     </div>
                   </div>
 
@@ -442,6 +459,7 @@ const Profile = () => {
                       Order is already {selectedOrder.status.toLowerCase()}.
                     </p>
                   )}
+                  
              
                 </div>
               </div>

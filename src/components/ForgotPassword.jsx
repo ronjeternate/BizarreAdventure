@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { auth } from "../firebase/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
 import LoginBg from "../assets/loginbg.png";
-import { ArrowLeftIcon } from "@heroicons/react/solid"; // Import back icon
+import { ArrowLeftIcon } from "@heroicons/react/solid"; 
+import { Box, TextField } from "@mui/material";
 
 Modal.setAppElement("#root");
 
@@ -85,14 +86,25 @@ const ForgotPassword = ({ isOpen, onClose }) => {
           {successMessage && <p className="text-green-500 text-center mb-3">{successMessage}</p>}
 
           <form onSubmit={handleSendResetEmail}>
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border mb-3 border-black/50"
-              disabled={loading}
-            />
+            <div className="relative w-full mb-3">
+              <Box
+                component="form"
+                sx={{ "& > :not(style)": { width: "100%" } }} // Full width styling
+                noValidate
+                autoComplete="off"
+              >
+                <TextField
+                  id="email"
+                  label="Enter your email address"
+                  type="email"
+                  variant="outlined"
+                  fullWidth
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                />
+              </Box>
+            </div>
 
             <button
               type="submit"

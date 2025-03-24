@@ -128,27 +128,29 @@ const SignUp = ({ isOpen, onClose }) => {
               onChange={(e) => setFullName(e.target.value)}
             />
           </Box>
-          <Box
-            component="form"
-            sx={{ "& > :not(style)": { width: "100%" } }} // Full width styling
-            noValidate
-            autoComplete="off"
-          >
-            <TextField
-              id="email"
-              label="Enter email address"
-              type="email"
-              variant="outlined"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </Box>
-
-          <div className="relative w-full">
+          <div className="relative w-full mt-3">
             <Box
               component="form"
-              sx={{ "& > :not(style)": { m: 1, width: "100%" } }} // Full width styling
+              sx={{ "& > :not(style)": {  width: "100%" } }} // Full width styling
+              noValidate
+              autoComplete="off"
+            >
+              <TextField
+                id="email"
+                label="Enter email address"
+                type="email"
+                variant="outlined"
+                fullWidth
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Box>
+          </div>
+
+          <div className="relative w-full mt-3">
+            <Box
+              component="form"
+              sx={{ "& > :not(style)": { width: "100%" } }} // Full width styling
               noValidate
               autoComplete="off"
             >

@@ -11,6 +11,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { Box, TextField, IconButton, InputAdornment } from "@mui/material";
 
 Modal.setAppElement("#root");
 
@@ -116,33 +117,58 @@ const Login = ({ isOpen, onClose }) => {
             </p>
 
             <form onSubmit={handleEmailLogin}>
-              <input
-                type="email"
-                placeholder="Enter email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border  border-black/50 mb-3 "
-                disabled={isLoading}
-              />
-
-              <div className="relative w-full">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 border  border-black/50 "
+            <div className="relative w-full">
+              <Box
+                component="form"
+                sx={{ "& > :not(style)": { width: "100%" } }} // Full width styling
+                noValidate
+                autoComplete="off"
+              >
+                <TextField
+                  id="email"
+                  label="Enter email address"
+                  type="email"
+                  variant="outlined"
+                  fullWidth
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-4 flex items-center text-blue-950 cursor-pointer hover:text-blue-950/90"
-                  onClick={() => setShowPassword(!showPassword)}
+              </Box>
+            </div>
+
+            <div className="relative w-full mt-3">
+              <Box
+                component="form"
+                sx={{ "& > :not(style)": { width: "100%" } }} // Full width styling
+                noValidate
+                autoComplete="off"
+              >
+                <TextField
+                  id="password"
+                  label="Enter password"
+                  type={showPassword ? "text" : "password"}
+                  variant="outlined"
+                  fullWidth
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
-                >
-                  {showPassword ? <EyeIcon className="w-5 h-5" /> : <EyeOffIcon className="w-5 h-5" />}
-                </button>
-              </div>
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          disabled={isLoading}
+                        >
+                          {showPassword ? <EyeIcon className="w-5 h-5" /> : <EyeOffIcon className="w-5 h-5" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+            </div>
 
               <button
                 type="submit"

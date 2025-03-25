@@ -114,7 +114,7 @@ const Checkout = () => {
         customerAddress: `${defaultAddress.street}, ${defaultAddress.region}, ${defaultAddress.postalCode}`,
         customerPhone: defaultAddress.phoneNumber,
         products: product ? [product] : products,
-        total,
+        total: Number(total),
         shippingFee,
         orderDate: serverTimestamp(),
         status: "Pending",

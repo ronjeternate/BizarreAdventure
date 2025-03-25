@@ -7,6 +7,7 @@ import { doc, getDoc, collection, addDoc  } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useAuth } from "./AuthContext";
+import { Box, TextField } from "@mui/material";
 
 const BuyPage = ({ product, onClose }) => {
   const [quantity, setQuantity] = useState(1);
@@ -313,13 +314,54 @@ const BuyPage = ({ product, onClose }) => {
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
               <div className="bg-white p-6  shadow-lg w-150">
                 <h2 className="text-xl font-bold mb-4">Submit Feedback</h2>
-                <input className="w-full border border-black/70 p-2 mb-2" placeholder="Your Name" value={feedback.name} onChange={(e) => setFeedback({ ...feedback, name: e.target.value })} />
-                <textarea className="w-full h-50 border border-black/70 p-2 mb-2" placeholder="Description" value={feedback.desc} onChange={(e) => setFeedback({ ...feedback, desc: e.target.value })}></textarea>
-                <input className="w-full border border-black/70 p-2 mb-5" placeholder="Rating (1-5)" type="number" value={feedback.rating} onChange={(e) =>
-                    setFeedback({ ...feedback, rating: Math.min(5, Math.max(1, Number(e.target.value))) })
-                  }
-                    min="1"
-                    max="5" />
+                <Box component="form" noValidate autoComplete="off" sx={{ width: "100%" }}>
+                  {/* Name */}
+                  <TextField
+                    id="name"
+                    name="name"
+                    label="Your Name"
+                    type="text"
+                    variant="outlined"
+                    fullWidth
+                    sx={{ mb: 2 }}
+                    value={feedback.name}
+                    onChange={(e) => setFeedback({ ...feedback, name: e.target.value })}
+                  />
+
+                  {/* Description */}
+                  <TextField
+                    id="desc"
+                    name="desc"
+                    label="Description"
+                    multiline
+                    rows={4} // Adjust height similar to h-50
+                    variant="outlined"
+                    fullWidth
+                    sx={{ mb: 2 }}
+                    value={feedback.desc}
+                    onChange={(e) => setFeedback({ ...feedback, desc: e.target.value })}
+                  />
+
+                  {/* Rating */}
+                  <TextField
+                    id="rating"
+                    name="rating"
+                    label="Rating (1-5)"
+                    type="number"
+                    variant="outlined"
+                    fullWidth
+                    sx={{ mb: 3 }}
+                    value={feedback.rating}
+                    onChange={(e) =>
+                      setFeedback({
+                        ...feedback,
+                        rating: Math.min(5, Math.max(1, Number(e.target.value))),
+                      })
+                    }
+                    inputProps={{ min: 1, max: 5 }}
+                  />
+                </Box>
+
                 <div className="flex gap-5">
                   <button onClick={() => setShowFeedbackForm(false)} className="flex-1 bg-gray-300 cursor-pointer">Cancel</button>
                   <button className="flex-1 bg-blue-950 text-white p-2 cursor-pointer" onClick={handleSubmitFeedback}>Submit</button>
